@@ -78,14 +78,18 @@ export function WishlistPageComponent() {
                 <Button onClick={handleAddItem} className="mr-2">
                   <PlusCircle className="mr-2 h-4 w-4" /> Add Item
                 </Button>
-                <Button onClick={handleShareWishlist} variant="outline">
+                <Button
+                  onClick={handleShareWishlist}
+                  variant="outline"
+                  className="text-black hover:bg-gray-200 transition-colors duration-200"
+                >
                   <Share2 className="mr-2 h-4 w-4" /> Share Wishlist
                 </Button>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {wishlistItems.map((item) => (
-                <Card key={item.id} className="overflow-hidden">
+                <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
                   <div className="relative w-full h-48">
                     <Image
                       src={item.image}
