@@ -22,7 +22,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ## Your Wishlist Page
 ![Your Wishlist Page](preview/wishlist.png)
 
-## Friends Wishlist Page
+## Friends Wishlist Page <- need improvement
 ![Friends Wishlist Page](preview/friends.png)
 
 ## Calendar Page <- need improvement
