@@ -31,7 +31,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
             className={`w-full justify-start mb-2 ${getTextColor(activeTab === 'friends-wishlists')}`}
             onClick={() => setActiveTab('friends-wishlists')}
           >
-            <Users className="mr-2 h-4 w-4" /> Friends' Wishlists
+            <Users className="mr-2 h-4 w-4" /> Friends&apos; Wishlists
           </Button>
           <Button
             variant={activeTab === 'calendar-events' ? 'default' : 'ghost'}

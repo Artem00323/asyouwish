@@ -78,7 +78,7 @@ export function LoginPageComponent() {
         {/* End of the form */}
         <CardFooter className="flex flex-wrap items-center justify-between gap-2">
           <div className="text-sm text-muted-foreground">
-            <span className="mr-1">Don't have an account?</span>
+            <span className="mr-1">Don&apos;t have an account?</span>
             <Link href="/signup" className="text-primary hover:underline">
               Sign up
             </Link>
