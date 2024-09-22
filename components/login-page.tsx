@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +19,7 @@ export function LoginPageComponent() {
     console.log("Gmail login clicked");
   };
 
-  const handleSubmit = (e : any) => {
+  const handleSubmit = (e : FormEvent) => {
     e.preventDefault(); // Prevent default form submission
     if (email === 'admin@gmail.com' && password === '1234') {
       router.push('/wishlist'); // Redirect to /wishlist
