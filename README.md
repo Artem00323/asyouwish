@@ -20,7 +20,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ![Sign up Page](preview/signup.png)
 
 ## Your Wishlist Page
-![Your Wishlist Page](preview/wishlist.png)
+![Your Wishlist Page](preview/wishlist_upd.png)
 
 ## Friends Wishlist Page <- need improvement
 ![Friends Wishlist Page](preview/friends.png)
