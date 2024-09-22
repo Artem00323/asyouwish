@@ -9,6 +9,9 @@ import Sidebar from '@/components/sidebar';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Calendar } from '@/components/ui/calendar';
+import { Event } from '@/components/ui/types'; // Adjust the import path accordingly
+import { v4 as uuidv4 } from 'uuid';
+
 
 type WishlistItem = {
   id: string;
@@ -19,14 +22,6 @@ type WishlistItem = {
 };
 
 type Tab = 'your-wishlist' | 'friends-wishlists' | 'calendar-events' | 'profile';
-
-type Event = {
-  id: string;
-  title: string;
-  date: Date;
-  type: 'birthday' | 'event';
-  friendId: string;
-};
 
 export function WishlistPageComponent() {
   const [activeTab, setActiveTab] = useState<Tab>('your-wishlist');
@@ -39,10 +34,11 @@ export function WishlistPageComponent() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   const events: Event[] = [
-    { id: '1', title: "Alice's Birthday", date: new Date(2024, 8, 15), type: 'birthday', friendId: 'alice123' },
-    { id: '2', title: "Bob's Graduation", date: new Date(2024, 9, 20), type: 'event', friendId: 'bob456' },
-    { id: '3', title: "Charlie's Wedding", date: new Date(2024, 8, 5), type: 'event', friendId: 'charlie789' },
-    { id: '4', title: "David's Birthday", date: new Date(2024, 8, 5), type: 'birthday', friendId: 'david101' },
+    { id: uuidv4(), title: "Alice's Birthday", date: new Date(2024, 8, 15), type: 'birthday', friendId: 'alice123' },
+    { id: uuidv4(), title: "Bob's Graduation", date: new Date(2024, 9, 20), type: 'event', friendId: 'bob456' },
+    { id: uuidv4(), title: "Charlie's Wedding", date: new Date(2024, 8, 5), type: 'event', friendId: 'charlie789' },
+    { id: uuidv4(), title: "David's Birthday", date: new Date(2024, 8, 5), type: 'birthday', friendId: 'david101' },
+    { id: uuidv4(), title: "Artem's Birthday", date: new Date(2024, 8, 5), type: 'birthday', friendId: 'artem137' },
   ];
 
   const getEventsForDate = (date: Date) => {
