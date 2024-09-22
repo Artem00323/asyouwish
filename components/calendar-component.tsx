@@ -26,12 +26,12 @@ export function CalendarComponent({ events }: CalendarComponentProps) {
     <>
       <h2 className="text-3xl font-bold text-indigo-800 mb-6">Calendar Events</h2>
       <div className="grid grid-cols-1 lg:grid-cols-[2fr,1fr] gap-8">
-        <Calendar 
+        <Calendar
           events={events} 
           onSelectDate={setSelectedDate} 
           selectedDate={selectedDate}
         />
-        <Card className="p-4 overflow-auto">
+        <Card className="p-4 overflow-auto hover:shadow-lg transition-shadow duration-300">
           <h3 className="text-xl font-semibold mb-4">Events on {selectedDate.toDateString()}</h3>
           {getEventsForDate(selectedDate).length > 0 ? (
             getEventsForDate(selectedDate).map(event => (

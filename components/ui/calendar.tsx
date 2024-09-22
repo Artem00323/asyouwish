@@ -95,7 +95,7 @@ export function Calendar({ events = [], onSelectDate, selectedDate }: CalendarPr
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-4">
+    <div className="bg-white rounded-lg shadow p-4 hover:shadow-lg transition-shadow duration-300">
       {/* Header */}
       <div className="grid grid-cols-3 items-center mb-4 text-black">
         {/* Previous Button */}
