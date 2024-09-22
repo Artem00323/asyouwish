@@ -1,19 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { PlusCircle, Share2, Trash2, Info, Gift, CalendarIcon } from 'lucide-react';
+import { PlusCircle, Share2, Trash2, Info } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
-import Link from 'next/link';
 import Image from 'next/image';
 
 import Sidebar from '@/components/sidebar';
 import { FriendsWishlists } from '@/components/friends-wishlist-component'
+import { CalendarComponent } from '@/components/calendar-component'
+import { ProfileComponent } from '@/components/profile-component'
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Calendar } from '@/components/ui/calendar';
 import { Event } from '@/components/ui/types';
-import { CalendarComponent } from '@/components/calendar-component';
 
 type WishlistItem = {
   id: string;
@@ -125,12 +124,7 @@ export function WishlistPageComponent() {
 
         {activeTab === 'calendar-events' && <CalendarComponent events={events} />}
 
-        {activeTab === 'profile' && (
-          <>
-            <h2 className="text-3xl font-bold text-indigo-800 mb-6">Profile</h2>
-            <p className="text-gray-600">Coming soon...</p>
-          </>
-        )}
+        {activeTab === 'profile' && <ProfileComponent />}
       </main>
     </div>
   );

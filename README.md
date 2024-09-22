@@ -27,3 +27,6 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## Calendar Page <- need improvement
 ![Calendar Page](preview/calendar_new.png)
+
+## Profile Page <- need improvement
+![Profile Page](preview/profile.png)
