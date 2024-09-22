@@ -26,4 +26,4 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ![Friends Wishlist Page](preview/friends.png)
 
 ## Calendar Page <- need improvement
-![Calendar Page](preview/calendar.png)
+![Calendar Page](preview/calendar_new.png)
