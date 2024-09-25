@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import Sidebar from '@/components/sidebar';
+import BottomNavBar from '@/components/bottom-nav-bar';
 import { YourWishlistComponent } from '@/components/your-wishlist-component';
 import { FriendsWishlists } from '@/components/friends-wishlist-component';
 import { CalendarComponent } from '@/components/calendar-component';
@@ -24,14 +25,22 @@ export function WishlistPageComponent() {
   ];
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-      <main className="flex-1 p-4 md:p-8 transition-all duration-300 overflow-auto">
-        {activeTab === 'your-wishlist' && <YourWishlistComponent />}
-        {activeTab === 'friends-wishlists' && <FriendsWishlists />}
-        {activeTab === 'calendar-events' && <CalendarComponent events={events} />}
-        {activeTab === 'profile' && <ProfileComponent />}
-      </main>
+    <div className="flex flex-col h-screen bg-gray-100">
+      <div className="flex flex-1 overflow-hidden">
+        {/* Сайдбар для больших экранов */}
+        <div className="hidden md:block">
+          <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+        </div>
+        {/* Основной контент */}
+        <main className="flex-1 p-4 md:p-8 overflow-auto md:pb-0 pb-16">
+          {activeTab === 'your-wishlist' && <YourWishlistComponent />}
+          {activeTab === 'friends-wishlists' && <FriendsWishlists />}
+          {activeTab === 'calendar-events' && <CalendarComponent events={events} />}
+          {activeTab === 'profile' && <ProfileComponent />}
+        </main>
+      </div>
+      {/* Нижняя навигация для мобильных устройств */}
+      <BottomNavBar activeTab={activeTab} setActiveTab={setActiveTab} />
     </div>
   );
 }
