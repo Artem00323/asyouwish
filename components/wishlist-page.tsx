@@ -27,19 +27,22 @@ export function WishlistPageComponent() {
   return (
     <div className="flex flex-col h-screen bg-gray-100">
       <div className="flex flex-1 overflow-hidden">
-        {/* Сайдбар для больших экранов */}
+        {/* Sidebar for larger screens */}
         <div className="hidden md:block">
           <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
         </div>
-        {/* Основной контент */}
-        <main className="flex-1 p-4 md:p-8 overflow-auto md:pb-0 pb-16">
+        {/* Main content */}
+        <main
+          className="flex-1 p-4 md:p-8 overflow-auto"
+          style={{ paddingBottom: 'calc(4rem + env(safe-area-inset-bottom))' }} // Adjust bottom padding
+        >
           {activeTab === 'your-wishlist' && <YourWishlistComponent />}
           {activeTab === 'friends-wishlists' && <FriendsWishlists />}
           {activeTab === 'calendar-events' && <CalendarComponent events={events} />}
           {activeTab === 'profile' && <ProfileComponent />}
         </main>
       </div>
-      {/* Нижняя навигация для мобильных устройств */}
+      {/* Bottom navigation for mobile devices */}
       <BottomNavBar activeTab={activeTab} setActiveTab={setActiveTab} />
     </div>
   );
