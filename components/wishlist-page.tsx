@@ -25,25 +25,25 @@ export function WishlistPageComponent() {
   ];
 
   return (
-    <div className="flex flex-col h-screen bg-gray-100">
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar for larger screens */}
-        <div className="hidden md:block">
-          <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-        </div>
-        {/* Main content */}
-        <main
-          className="flex-1 p-4 md:p-8 overflow-auto"
-          style={{ paddingBottom: 'calc(4rem + env(safe-area-inset-bottom))' }} // Adjust bottom padding
-        >
+    <div className="flex h-screen bg-gray-100">
+      {/* Sidebar for larger screens */}
+      <div className="hidden md:block">
+        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      </div>
+
+      {/* Main content and BottomNavBar */}
+      <div className="flex flex-col flex-1">
+        {/* Main content area */}
+        <main className="flex-1 overflow-y-auto p-4 md:p-8">
           {activeTab === 'your-wishlist' && <YourWishlistComponent />}
           {activeTab === 'friends-wishlists' && <FriendsWishlists />}
           {activeTab === 'calendar-events' && <CalendarComponent events={events} />}
           {activeTab === 'profile' && <ProfileComponent />}
         </main>
+
+        {/* Bottom navigation for mobile devices */}
+        <BottomNavBar activeTab={activeTab} setActiveTab={setActiveTab} />
       </div>
-      {/* Bottom navigation for mobile devices */}
-      <BottomNavBar activeTab={activeTab} setActiveTab={setActiveTab} />
     </div>
   );
 }

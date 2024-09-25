@@ -56,7 +56,7 @@ export function YourWishlistComponent() {
           </Button>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3 md:gap-4">
         {wishlistItems.map((item) => (
           <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
             <div className="relative w-full h-40 md:h-48">
