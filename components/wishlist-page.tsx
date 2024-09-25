@@ -32,9 +32,9 @@ export function WishlistPageComponent() {
       </div>
 
       {/* Main content and BottomNavBar */}
-      <div className="flex flex-col flex-1">
+      <div className="flex flex-col flex-1 relative">
         {/* Main content area */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-8">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-20 md:pb-8">
           {activeTab === 'your-wishlist' && <YourWishlistComponent />}
           {activeTab === 'friends-wishlists' && <FriendsWishlists />}
           {activeTab === 'calendar-events' && <CalendarComponent events={events} />}
@@ -42,7 +42,9 @@ export function WishlistPageComponent() {
         </main>
 
         {/* Bottom navigation for mobile devices */}
-        <BottomNavBar activeTab={activeTab} setActiveTab={setActiveTab} />
+        <div className="md:hidden">
+          <BottomNavBar activeTab={activeTab} setActiveTab={setActiveTab} />
+        </div>
       </div>
     </div>
   );

@@ -14,7 +14,7 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeTab, setActiveTab }) 
   const getIconColor = (isActive: boolean) => (isActive ? 'text-indigo-600' : 'text-gray-500');
 
   return (
-    <div className="bg-white shadow-md flex justify-around py-2 md:hidden">
+    <div className="fixed bottom-0 left-0 right-0 bg-white shadow-md flex justify-around py-2">
       <button onClick={() => setActiveTab('your-wishlist')} className="flex flex-col items-center">
         <Gift className={`h-6 w-6 ${getIconColor(activeTab === 'your-wishlist')}`} />
         <span className={`text-xs ${getIconColor(activeTab === 'your-wishlist')}`}>Your Wishlist</span>
