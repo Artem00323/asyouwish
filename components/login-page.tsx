@@ -9,22 +9,36 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { Mail } from "lucide-react";
 
+// Firebase imports
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/components/backend/firebase"; // Import auth from your firebase.ts config file
+
 export function LoginPageComponent() {
   const [email, setEmail] = useState('');       // State for email
   const [password, setPassword] = useState(''); // State for password
-  const router = useRouter(); // Initialize the router
+  const [error, setError] = useState('');       // State for handling login errors
+  const router = useRouter();                   // Initialize the router
 
   const handleGmailLogin = () => {
     // Implement Gmail login logic here
     console.log("Gmail login clicked");
   };
 
-  const handleSubmit = (e : FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault(); // Prevent default form submission
-    if (email === 'admin@gmail.com' && password === '1234') {
-      router.push('/wishlist'); // Redirect to /wishlist
-    } else {
-      alert('Invalid credentials'); // Show an error message
+    
+    try {
+      // Firebase authentication using email and password
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      console.log("Logged in user:", user);
+      
+      // Redirect to /wishlist after successful login
+      router.push('/wishlist');
+      
+    } catch (error: any) {
+      setError(error.message); // Show an error message if login fails
+      console.error("Login error:", error);
     }
   };
 
@@ -44,8 +58,8 @@ export function LoginPageComponent() {
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
-                type="email" // Changed to text to match 'admin' username
-                placeholder="Enter your username"
+                type="email"
+                placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -59,6 +73,7 @@ export function LoginPageComponent() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
+            {error && <p className="text-red-500">{error}</p>}
             <Button className="w-full" type="submit">
               Sign In
             </Button>
