@@ -7,9 +7,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { Mail } from "lucide-react";
+import { Mail, AlertCircle } from "lucide-react";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
-import { auth, googleProvider } from "@/components/backend/firebase"; // Adjust the path as necessary
+import { auth, googleProvider, getFriendlyErrorMessage } from "@/components/backend/firebase"; // Import the firebase config file
+import { FirebaseError } from "firebase/app"; // Import FirebaseError
 
 export function LoginPageComponent() {
   const [email, setEmail] = useState('');       // State for email
@@ -19,16 +20,20 @@ export function LoginPageComponent() {
 
   // Handle Gmail (Google) Login
   const handleGmailLogin = async () => {
+    setError(""); // Reset error state before each submission
     try {
       const result = await signInWithPopup(auth, googleProvider);
       // You can access user info via result.user
       console.log("Gmail login successful:", result.user);
       router.push('/wishlist'); // Redirect to wishlist or desired page
-    } catch (err) {
-      if (err instanceof Error) {
-        setError("Gmail login failed: " + err.message);
+    } catch (err: unknown) {
+      if (err instanceof FirebaseError) {
+        const friendlyMessage = getFriendlyErrorMessage(err.code);
+        setError(friendlyMessage);
+      } else if (err instanceof Error) {
+        setError("An unexpected error occurred. Please try again.");
       } else {
-        setError("An unknown error occurred.");
+        setError("An unexpected error occurred. Please try again.");
       }
       console.error("Gmail login error:", err);
     }
@@ -44,11 +49,14 @@ export function LoginPageComponent() {
       const user = userCredential.user;
       console.log("User logged in:", user);
       router.push('/wishlist'); // Redirect to wishlist or desired page
-    } catch (err) {
-      if (err instanceof Error) {
-        setError("Login failed: " + err.message);
+    } catch (err: unknown) {
+      if (err instanceof FirebaseError) {
+        const friendlyMessage = getFriendlyErrorMessage(err.code);
+        setError(friendlyMessage);
+      } else if (err instanceof Error) {
+        setError("An unexpected error occurred. Please try again.");
       } else {
-        setError("An unknown error occurred.");
+        setError("An unexpected error occurred. Please try again.");
       }
       console.error("Login error:", err);
     }
@@ -63,6 +71,29 @@ export function LoginPageComponent() {
             Enter your email to sign in to your account
           </CardDescription>
         </CardHeader>
+
+        {/* Display the error message */}
+        {error && (
+          <div className="mx-6 mb-4">
+            <div
+              className="bg-red-50 border-l-4 border-red-400 p-4 rounded-md shadow-sm transition-all duration-300 ease-in-out"
+              role="alert"
+              aria-live="assertive"
+            >
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <AlertCircle className="h-5 w-5 text-red-400" aria-hidden="true" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-red-700 font-medium">
+                    {error}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Start of the form */}
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
@@ -87,7 +118,6 @@ export function LoginPageComponent() {
                 required
               />
             </div>
-            {error && <p className="text-red-500">{error}</p>}
             <Button className="w-full" type="submit">
               Sign In
             </Button>
@@ -104,6 +134,7 @@ export function LoginPageComponent() {
             </Button>
           </CardContent>
         </form>
+
         {/* End of the form */}
         <CardFooter className="flex flex-wrap items-center justify-between gap-2">
           <div className="text-sm text-muted-foreground">

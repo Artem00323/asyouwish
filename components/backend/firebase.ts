@@ -15,7 +15,26 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+
 // Initialize Google Auth Provider for Gmail sign-in
 const googleProvider = new GoogleAuthProvider();
+
+// Function to map Firebase error codes to friendly messages
+export const getFriendlyErrorMessage = (errorCode: string): string => {
+  switch (errorCode) {
+    case "auth/email-already-in-use":
+      return "This email is already in use. Please try logging in or use a different email.";
+    case "auth/invalid-email":
+      return "Please enter a valid email address.";
+    case "auth/wrong-password":
+      return "Incorrect password. Please try again.";
+    case "auth/user-not-found":
+      return "No account found with this email. Please sign up first.";
+    case "auth/weak-password":
+      return "Your password is too weak. Please choose a stronger password.";
+    default:
+      return "An error occurred. Please try again.";
+  }
+};
 
 export { auth, googleProvider };
