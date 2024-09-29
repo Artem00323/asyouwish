@@ -14,7 +14,7 @@ import { auth, googleProvider } from "@/components/backend/firebase"; // Adjust 
 export function LoginPageComponent() {
   const [email, setEmail] = useState('');       // State for email
   const [password, setPassword] = useState(''); // State for password
-  const [error, setError] = useState('');       // State for error messages
+  const [error, setError] = useState<string>(''); // State for error messages (string type)
   const router = useRouter(); // Initialize the router
 
   // Handle Gmail (Google) Login
@@ -24,9 +24,13 @@ export function LoginPageComponent() {
       // You can access user info via result.user
       console.log("Gmail login successful:", result.user);
       router.push('/wishlist'); // Redirect to wishlist or desired page
-    } catch (error: any) {
-      setError("Gmail login failed: " + error.message);
-      console.error("Gmail login error:", error);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError("Gmail login failed: " + err.message);
+      } else {
+        setError("An unknown error occurred.");
+      }
+      console.error("Gmail login error:", err);
     }
   };
 
@@ -40,9 +44,13 @@ export function LoginPageComponent() {
       const user = userCredential.user;
       console.log("User logged in:", user);
       router.push('/wishlist'); // Redirect to wishlist or desired page
-    } catch (error: any) {
-      setError("Login failed: " + error.message);
-      console.error("Login error:", error);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError("Login failed: " + err.message);
+      } else {
+        setError("An unknown error occurred.");
+      }
+      console.error("Login error:", err);
     }
   };
 
