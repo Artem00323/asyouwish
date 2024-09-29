@@ -9,6 +9,7 @@ import { Mail, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { createUserWithEmailAndPassword, signInWithPopup, updateProfile } from "firebase/auth";
 import { auth, googleProvider, getFriendlyErrorMessage } from "@/components/backend/firebase"; // Import the firebase config file
+import { FirebaseError } from "firebase/app"; // Import FirebaseError
 import { useRouter } from 'next/navigation';
 
 export function SignupPageComponent() {
@@ -35,10 +36,11 @@ export function SignupPageComponent() {
       // Redirect to wishlist or desired page
       router.push('/wishlist');
     } catch (err: unknown) {
-      if (err instanceof Error && (err as any).code) {
-        const errorCode = (err as any).code;
-        const friendlyMessage = getFriendlyErrorMessage(errorCode);
+      if (err instanceof FirebaseError) {
+        const friendlyMessage = getFriendlyErrorMessage(err.code);
         setError(friendlyMessage);
+      } else if (err instanceof Error) {
+        setError("An unexpected error occurred. Please try again.");
       } else {
         setError("An unexpected error occurred. Please try again.");
       }
@@ -62,10 +64,11 @@ export function SignupPageComponent() {
       // Redirect to wishlist or desired page
       router.push('/wishlist');
     } catch (err: unknown) {
-      if (err instanceof Error && (err as any).code) {
-        const errorCode = (err as any).code;
-        const friendlyMessage = getFriendlyErrorMessage(errorCode);
+      if (err instanceof FirebaseError) {
+        const friendlyMessage = getFriendlyErrorMessage(err.code);
         setError(friendlyMessage);
+      } else if (err instanceof Error) {
+        setError("An unexpected error occurred. Please try again.");
       } else {
         setError("An unexpected error occurred. Please try again.");
       }

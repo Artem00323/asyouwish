@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { Mail, AlertCircle } from "lucide-react";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
-import { auth, googleProvider, getFriendlyErrorMessage } from "@/components/backend/firebase";
+import { auth, googleProvider, getFriendlyErrorMessage } from "@/components/backend/firebase"; // Import the firebase config file
+import { FirebaseError } from "firebase/app"; // Import FirebaseError
 
 export function LoginPageComponent() {
   const [email, setEmail] = useState('');       // State for email
@@ -19,17 +20,20 @@ export function LoginPageComponent() {
 
   // Handle Gmail (Google) Login
   const handleGmailLogin = async () => {
+    setError(""); // Reset error state before each submission
     try {
       const result = await signInWithPopup(auth, googleProvider);
+      // You can access user info via result.user
       console.log("Gmail login successful:", result.user);
       router.push('/wishlist'); // Redirect to wishlist or desired page
     } catch (err: unknown) {
-      if (err instanceof Error && (err as any).code) {
-        const errorCode = (err as any).code;
-        const friendlyMessage = getFriendlyErrorMessage(errorCode);
+      if (err instanceof FirebaseError) {
+        const friendlyMessage = getFriendlyErrorMessage(err.code);
         setError(friendlyMessage);
+      } else if (err instanceof Error) {
+        setError("An unexpected error occurred. Please try again.");
       } else {
-        setError("An unknown error occurred. Please try again.");
+        setError("An unexpected error occurred. Please try again.");
       }
       console.error("Gmail login error:", err);
     }
@@ -37,7 +41,7 @@ export function LoginPageComponent() {
 
   // Handle Email/Password Login
   const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevent default form submission
     setError(''); // Reset error state
 
     try {
@@ -46,12 +50,13 @@ export function LoginPageComponent() {
       console.log("User logged in:", user);
       router.push('/wishlist'); // Redirect to wishlist or desired page
     } catch (err: unknown) {
-      if (err instanceof Error && (err as any).code) {
-        const errorCode = (err as any).code;
-        const friendlyMessage = getFriendlyErrorMessage(errorCode);
+      if (err instanceof FirebaseError) {
+        const friendlyMessage = getFriendlyErrorMessage(err.code);
         setError(friendlyMessage);
+      } else if (err instanceof Error) {
+        setError("An unexpected error occurred. Please try again.");
       } else {
-        setError("An unknown error occurred. Please try again.");
+        setError("An unexpected error occurred. Please try again.");
       }
       console.error("Login error:", err);
     }
