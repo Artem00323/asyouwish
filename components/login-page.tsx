@@ -8,36 +8,40 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { Mail } from "lucide-react";
-
-// Firebase imports
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/components/backend/firebase"; // Import auth from your firebase.ts config file
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "@/components/backend/firebase"; // Adjust the path as necessary
 
 export function LoginPageComponent() {
   const [email, setEmail] = useState('');       // State for email
   const [password, setPassword] = useState(''); // State for password
-  const [error, setError] = useState('');       // State for handling login errors
-  const router = useRouter();                   // Initialize the router
+  const [error, setError] = useState('');       // State for error messages
+  const router = useRouter(); // Initialize the router
 
-  const handleGmailLogin = () => {
-    // Implement Gmail login logic here
-    console.log("Gmail login clicked");
+  // Handle Gmail (Google) Login
+  const handleGmailLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      // You can access user info via result.user
+      console.log("Gmail login successful:", result.user);
+      router.push('/wishlist'); // Redirect to wishlist or desired page
+    } catch (error: any) {
+      setError("Gmail login failed: " + error.message);
+      console.error("Gmail login error:", error);
+    }
   };
 
+  // Handle Email/Password Login
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault(); // Prevent default form submission
-    
+    setError(''); // Reset error state
+
     try {
-      // Firebase authentication using email and password
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      console.log("Logged in user:", user);
-      
-      // Redirect to /wishlist after successful login
-      router.push('/wishlist');
-      
+      console.log("User logged in:", user);
+      router.push('/wishlist'); // Redirect to wishlist or desired page
     } catch (error: any) {
-      setError(error.message); // Show an error message if login fails
+      setError("Login failed: " + error.message);
       console.error("Login error:", error);
     }
   };
@@ -62,6 +66,7 @@ export function LoginPageComponent() {
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                required
               />
             </div>
             <div className="space-y-2">
@@ -71,6 +76,7 @@ export function LoginPageComponent() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                required
               />
             </div>
             {error && <p className="text-red-500">{error}</p>}

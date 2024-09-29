@@ -1,6 +1,6 @@
 // firebase.ts
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCkTlN7PkzLz7Msi0FlA8_-Kx6VwZ1983o",
@@ -15,5 +15,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+// Initialize Google Auth Provider for Gmail sign-in
+const googleProvider = new GoogleAuthProvider();
 
-export { auth };
+export { auth, googleProvider };
