@@ -42,10 +42,12 @@ export function WishlistPageComponent() {
         </main>
 
         {/* Bottom navigation for mobile devices */}
-        <div className="md:hidden">
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-10">
           <BottomNavBar activeTab={activeTab} setActiveTab={setActiveTab} />
         </div>
       </div>
     </div>
+
+
   );
 }
