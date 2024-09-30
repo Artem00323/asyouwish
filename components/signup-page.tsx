@@ -1,26 +1,30 @@
 'use client';
 
+import { useState, FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { Mail, AlertCircle } from "lucide-react";
-import { useState } from "react";
 import { createUserWithEmailAndPassword, signInWithPopup, updateProfile } from "firebase/auth";
-import { auth, googleProvider, getFriendlyErrorMessage } from "@/components/backend/firebase"; // Import the firebase config file
-import { FirebaseError } from "firebase/app"; // Import FirebaseError
-import { useRouter } from 'next/navigation';
+import { auth, googleProvider, getFriendlyErrorMessage } from "@/components/backend/firebase";
+import { FirebaseError } from "firebase/app";
 
 export function SignupPageComponent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(false); // Loading state
   const router = useRouter(); // Initialize the router
 
-  const handleSignup = async (e: React.FormEvent) => {
+  // Handle Email/Password Signup
+  const handleSignup = async (e: FormEvent) => {
     e.preventDefault();
+    if (isLoading) return; // Prevent multiple submissions
+    setIsLoading(true);
     setError(""); // Reset error state before each submission
 
     try {
@@ -45,18 +49,23 @@ export function SignupPageComponent() {
         setError("An unexpected error occurred. Please try again.");
       }
       console.error("Signup error:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   // Handle Gmail (Google) Signup
   const handleGmailSignup = async () => {
+    if (isLoading) return; // Prevent multiple clicks
+    setIsLoading(true);
     setError(""); // Reset error state before each submission
+
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
       console.log("Gmail signup successful:", user);
 
-      // Optionally, set display name if not set
+      // Optionally, set display name if not set and name is provided
       if (!user.displayName && name) {
         await updateProfile(user, { displayName: name });
       }
@@ -73,6 +82,8 @@ export function SignupPageComponent() {
         setError("An unexpected error occurred. Please try again.");
       }
       console.error("Gmail signup error:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -119,6 +130,7 @@ export function SignupPageComponent() {
                 onChange={(e) => setName(e.target.value)}
                 placeholder="John Doe"
                 required
+                disabled={isLoading} // Disable input while loading
               />
             </div>
             <div className="space-y-2">
@@ -130,6 +142,7 @@ export function SignupPageComponent() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="m@example.com"
                 required
+                disabled={isLoading} // Disable input while loading
               />
             </div>
             <div className="space-y-2">
@@ -140,10 +153,11 @@ export function SignupPageComponent() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={isLoading} // Disable input while loading
               />
             </div>
-            <Button className="w-full" type="submit">
-              Create Account
+            <Button className="w-full" type="submit" disabled={isLoading}>
+              {isLoading ? "Creating Account..." : "Create Account"}
             </Button>
           </form>
 
@@ -155,8 +169,13 @@ export function SignupPageComponent() {
               <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
             </div>
           </div>
-          <Button variant="outline" className="w-full" onClick={handleGmailSignup}>
-            <Mail className="mr-2 h-4 w-4" /> Sign up with Gmail
+          <Button 
+            variant="outline" 
+            className="w-full" 
+            onClick={handleGmailSignup} 
+            disabled={isLoading}
+          >
+            <Mail className="mr-2 h-4 w-4" /> {isLoading ? "Signing Up..." : "Sign up with Gmail"}
           </Button>
         </CardContent>
 
