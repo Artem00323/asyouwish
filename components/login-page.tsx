@@ -9,23 +9,26 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { Mail, AlertCircle } from "lucide-react";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
-import { auth, googleProvider, getFriendlyErrorMessage } from "@/components/backend/firebase"; // Import the firebase config file
-import { FirebaseError } from "firebase/app"; // Import FirebaseError
+import { auth, googleProvider, getFriendlyErrorMessage } from "@/components/backend/firebase";
+import { FirebaseError } from "firebase/app";
 
 export function LoginPageComponent() {
-  const [email, setEmail] = useState('');       // State for email
-  const [password, setPassword] = useState(''); // State for password
-  const [error, setError] = useState<string>(''); // State for error messages (string type)
-  const router = useRouter(); // Initialize the router
+  const [email, setEmail] = useState('');       
+  const [password, setPassword] = useState(''); 
+  const [error, setError] = useState<string>(''); 
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter(); 
 
   // Handle Gmail (Google) Login
   const handleGmailLogin = async () => {
-    setError(""); // Reset error state before each submission
+    if (isLoading) return; // Prevent multiple clicks
+    setIsLoading(true);
+    setError("");
+
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      // You can access user info via result.user
       console.log("Gmail login successful:", result.user);
-      router.push('/wishlist'); // Redirect to wishlist or desired page
+      router.push('/wishlist');
     } catch (err: unknown) {
       if (err instanceof FirebaseError) {
         const friendlyMessage = getFriendlyErrorMessage(err.code);
@@ -36,19 +39,22 @@ export function LoginPageComponent() {
         setError("An unexpected error occurred. Please try again.");
       }
       console.error("Gmail login error:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   // Handle Email/Password Login
   const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault(); // Prevent default form submission
-    setError(''); // Reset error state
+    e.preventDefault(); 
+    setError(''); 
+    setIsLoading(true);
 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       console.log("User logged in:", user);
-      router.push('/wishlist'); // Redirect to wishlist or desired page
+      router.push('/wishlist');
     } catch (err: unknown) {
       if (err instanceof FirebaseError) {
         const friendlyMessage = getFriendlyErrorMessage(err.code);
@@ -59,6 +65,8 @@ export function LoginPageComponent() {
         setError("An unexpected error occurred. Please try again.");
       }
       console.error("Login error:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -118,8 +126,8 @@ export function LoginPageComponent() {
                 required
               />
             </div>
-            <Button className="w-full" type="submit">
-              Sign In
+            <Button className="w-full" type="submit" disabled={isLoading}>
+              {isLoading ? "Signing In..." : "Sign In"}
             </Button>
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
@@ -129,8 +137,13 @@ export function LoginPageComponent() {
                 <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
               </div>
             </div>
-            <Button variant="outline" className="w-full" onClick={handleGmailLogin}>
-              <Mail className="mr-2 h-4 w-4" /> Login with Gmail
+            <Button 
+              variant="outline" 
+              className="w-full" 
+              onClick={handleGmailLogin} 
+              disabled={isLoading}
+            >
+              <Mail className="mr-2 h-4 w-4" /> {isLoading ? "Loading..." : "Login with Gmail"}
             </Button>
           </CardContent>
         </form>
