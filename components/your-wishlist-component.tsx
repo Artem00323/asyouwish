@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { PlusCircle, Share2, Trash2, Info, ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Modal } from '@/components/ui/modal'; // Предполагается, что у вас есть компонент Modal
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Modal } from '@/components/ui/modal';
 
 type WishlistItem = {
   id: string;
@@ -22,8 +22,8 @@ type YourWishlistComponentProps = {
 };
 
 export function YourWishlistComponent({ wishlistId, onBack }: YourWishlistComponentProps) {
-  // Получите название вишлиста по его ID
-  const wishlistName = getWishlistNameById(wishlistId); // Реализуйте эту функцию для получения названия
+  // Get the wishlist name by its ID
+  const wishlistName = getWishlistNameById(wishlistId); // Implement this function to get the name
 
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([
     { id: '1', name: 'Smartphone', image: '/images/iphone.jpg', price: 999, contributed: 250 },
@@ -34,26 +34,26 @@ export function YourWishlistComponent({ wishlistId, onBack }: YourWishlistCompon
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const handleAddItem = () => {
-    console.log("Add item clicked");
+    console.log('Add item clicked');
   };
 
   const handleShareWishlist = () => {
-    console.log("Share wishlist clicked");
+    console.log('Share wishlist clicked');
   };
 
   const handleDeleteItem = (id: string) => {
-    setWishlistItems(wishlistItems.filter(item => item.id !== id));
+    setWishlistItems(wishlistItems.filter((item) => item.id !== id));
   };
 
   const handleItemDetails = (id: string) => {
-    console.log("Item details clicked for id:", id);
+    console.log('Item details clicked for id:', id);
   };
 
   const handleDeleteWishlist = () => {
-    // Логика удаления вишлиста
-    console.log("Wishlist deleted");
+    // Logic to delete the wishlist
+    console.log('Wishlist deleted');
     setIsDeleteModalOpen(false);
-    onBack(); // Возврат к выбору вишлистов после удаления
+    onBack(); // Return to wishlist selection after deletion
   };
 
   return (
@@ -113,23 +113,22 @@ export function YourWishlistComponent({ wishlistId, onBack }: YourWishlistCompon
         ))}
       </div>
 
-      {/* Кнопка "Delete Wishlist" внизу справа */}
+      {/* "Delete Wishlist" button at the bottom right */}
       <div className="flex justify-end mt-6">
-        <Button
-          variant="destructive"
-          size="sm"
-          onClick={() => setIsDeleteModalOpen(true)}
-        >
+        <Button variant="destructive" size="sm" onClick={() => setIsDeleteModalOpen(true)}>
           <Trash2 className="mr-2 h-4 w-4" /> Delete Wishlist
         </Button>
       </div>
 
-      {/* Модальное окно подтверждения удаления */}
+      {/* Confirmation modal for deletion */}
       {isDeleteModalOpen && (
         <Modal onClose={() => setIsDeleteModalOpen(false)}>
           <div className="p-4 text-black">
             <h2 className="text-lg font-semibold mb-4">Confirm Deletion</h2>
-            <p className="mb-4">Are you sure you want to delete the "{wishlistName}" wishlist? This action cannot be undone.</p>
+            <p className="mb-4">
+              Are you sure you want to delete the &quot;{wishlistName}&quot; wishlist? This action cannot
+              be undone.
+            </p>
             <div className="flex justify-end space-x-2">
               <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
                 Cancel
@@ -145,7 +144,7 @@ export function YourWishlistComponent({ wishlistId, onBack }: YourWishlistCompon
   );
 }
 
-// Пример функции для получения названия вишлиста по ID
+// Example function to get wishlist name by ID
 function getWishlistNameById(id: string): string {
   const wishlists = [
     { id: '1', name: 'Tech Gadgets' },
