@@ -143,7 +143,7 @@ export function YourWishlistComponent({ wishlistId, onBack }: YourWishlistCompon
     </>
   );
 }
-
+// 
 // Example function to get wishlist name by ID
 function getWishlistNameById(id: string): string {
   const wishlists = [
