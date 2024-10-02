@@ -9,45 +9,58 @@ import { YourWishlistComponent } from '@/components/your-wishlist-component';
 import { FriendsWishlists } from '@/components/friends-wishlist-component';
 import { CalendarComponent } from '@/components/calendar-component';
 import { ProfileComponent } from '@/components/profile-component';
+import { WishlistSelectionComponent } from '@/components/ui/wishlist-selection-component';
 import { Event } from '@/components/ui/types';
 
-type Tab = 'your-wishlist' | 'friends-wishlists' | 'calendar-events' | 'profile';
+// Тип вкладок
+export type Tab = 'your-wishlist' | 'friends-wishlists' | 'calendar-events' | 'profile';
 
 export function WishlistPageComponent() {
+  // Состояние для активной вкладки
   const [activeTab, setActiveTab] = useState<Tab>('your-wishlist');
+  const [selectedWishlistId, setSelectedWishlistId] = useState<string | null>(null);
 
+  // Пример данных для календаря
   const events: Event[] = [
     { id: uuidv4(), title: "Alice's Birthday", date: new Date(2024, 8, 15), type: 'birthday', friendId: 'alice123' },
     { id: uuidv4(), title: "Bob's Graduation", date: new Date(2024, 9, 20), type: 'event', friendId: 'bob456' },
-    { id: uuidv4(), title: "Charlie's Wedding", date: new Date(2024, 8, 5), type: 'event', friendId: 'charlie789' },
-    { id: uuidv4(), title: "David's Birthday", date: new Date(2024, 8, 5), type: 'birthday', friendId: 'david101' },
-    { id: uuidv4(), title: "Artem's Birthday", date: new Date(2024, 8, 5), type: 'birthday', friendId: 'artem137' },
+    // ... другие события
   ];
 
   return (
     <div className="flex h-screen bg-gray-100">
-      {/* Sidebar for larger screens */}
+      {/* Sidebar для больших экранов */}
       <div className="hidden md:block">
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       </div>
 
-      {/* Main content and BottomNavBar */}
+      {/* Основная область контента и навигация снизу */}
       <div className="flex flex-col flex-1 relative">
-        {/* Main content area */}
+        {/* Основной контент */}
         <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-20 md:pb-8">
-          {activeTab === 'your-wishlist' && <YourWishlistComponent />}
+          {/* Отображение контента в зависимости от активной вкладки */}
+          {activeTab === 'your-wishlist' && (
+            selectedWishlistId === null ? (
+              <WishlistSelectionComponent onSelectWishlist={setSelectedWishlistId} />
+            ) : (
+              <YourWishlistComponent
+                wishlistId={selectedWishlistId}
+                onBack={() => setSelectedWishlistId(null)}
+              />
+            )
+          )}
           {activeTab === 'friends-wishlists' && <FriendsWishlists />}
           {activeTab === 'calendar-events' && <CalendarComponent events={events} />}
           {activeTab === 'profile' && <ProfileComponent />}
         </main>
 
-        {/* Bottom navigation for mobile devices */}
+        {/* Навигация внизу для мобильных устройств */}
         <div className="md:hidden fixed bottom-0 left-0 right-0 z-10">
           <BottomNavBar activeTab={activeTab} setActiveTab={setActiveTab} />
         </div>
       </div>
     </div>
 
-
+    
   );
 }
