@@ -28,12 +28,6 @@ export function WishlistSelectButton({ id, name, description, image, onSelect }:
       <CardContent className="p-4">
         <h3 className="text-xl font-semibold mb-2">{name}</h3>
         <p className="text-gray-600 mb-4">{description}</p>
-        {/* <Button variant="outline" className="w-full">
-          View Wishlist <ChevronRight className="w-4 h-4 ml-2" />
-        </Button> */}
-        {/* <Button variant="default" size="default" className="w-full" onClick={() => onSelect(id)}>
-          View Wishlist
-        </Button> */}
         <Button variant="outline" size="default" className="w-full" onClick={() => onSelect(id)}>
           View Wishlist <ChevronRight className="w-4 h-4 ml-2" />
         </Button>
