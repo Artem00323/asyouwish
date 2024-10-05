@@ -1,91 +1,150 @@
+// components/signup-page.tsx
+
 'use client';
 
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import Link from "next/link";
-import { Mail, AlertCircle } from "lucide-react";
-import { createUserWithEmailAndPassword, signInWithPopup, updateProfile } from "firebase/auth";
-import { auth, googleProvider, getFriendlyErrorMessage } from "@/components/backend/firebase";
-import { FirebaseError } from "firebase/app";
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import Link from 'next/link';
+import { Mail, AlertCircle } from 'lucide-react';
+import {
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  updateProfile,
+} from 'firebase/auth';
+import { auth, googleProvider, getFriendlyErrorMessage } from '@/components/backend/firebase';
+import { FirebaseError } from 'firebase/app';
 
 export function SignupPageComponent() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [error, setError] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(false); // Loading state
-  const router = useRouter(); // Initialize the router
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState(''); // Even though we don't store it
+  const [name, setName] = useState('');
+  const [error, setError] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
-  // Handle Email/Password Signup
-  const handleSignup = async (e: FormEvent) => {
-    e.preventDefault();
-    if (isLoading) return; // Prevent multiple submissions
-    setIsLoading(true);
-    setError(""); // Reset error state before each submission
+// Function to create user in the database
+const createUserInDatabase = async (userData: {
+  name: string;
+  login: string;
+  email: string;
+  password_hash: string;
+}) => {
+  try {
+    const response = await fetch('/api/createUser', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    });
 
-    try {
-      // Firebase signup logic
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      // Set the display name
-      await updateProfile(user, { displayName: name });
-
-      console.log("User created:", user);
-
-      // Redirect to wishlist or desired page
-      router.push('/wishlist');
-    } catch (err: unknown) {
-      if (err instanceof FirebaseError) {
-        const friendlyMessage = getFriendlyErrorMessage(err.code);
-        setError(friendlyMessage);
-      } else if (err instanceof Error) {
-        setError("An unexpected error occurred. Please try again.");
-      } else {
-        setError("An unexpected error occurred. Please try again.");
-      }
-      console.error("Signup error:", err);
-    } finally {
-      setIsLoading(false);
+    if (!response.ok) {
+      throw new Error('Failed to create user in database');
     }
-  };
+    console.log('Пользователь успешно создан в базе данных:', userData);
+  } catch (error) {
+    console.error('Error creating user in database:', error);
+    // Handle error appropriately
+  }
+};
+
+
+// Handle Email/Password Signup
+const handleSignup = async (e: FormEvent) => {
+  e.preventDefault();
+  if (isLoading) return;
+  setIsLoading(true);
+  setError('');
+
+  try {
+    // Firebase sign-up logic
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    // Set the display name
+    await updateProfile(user, { displayName: name });
+
+    console.log('User created:', user);
+
+    // Create user in the database
+    await createUserInDatabase({
+      name: name,
+      login: user.uid, // Using Firebase UID as login
+      email: user.email || '',
+      password_hash: '', // Empty since we don't store passwords
+    });
+
+    // Redirect to wishlist or desired page
+    router.push('/wishlist');
+  } catch (err: unknown) {
+    if (err instanceof FirebaseError) {
+      const friendlyMessage = getFriendlyErrorMessage(err.code);
+      setError(friendlyMessage);
+    } else if (err instanceof Error) {
+      setError('An unexpected error occurred. Please try again.');
+    } else {
+      setError('An unexpected error occurred. Please try again.');
+    }
+    console.error('Signup error:', err);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   // Handle Gmail (Google) Signup
-  const handleGmailSignup = async () => {
-    if (isLoading) return; // Prevent multiple clicks
-    setIsLoading(true);
-    setError(""); // Reset error state before each submission
+const handleGmailSignup = async () => {
+  if (isLoading) return;
+  setIsLoading(true);
+  setError('');
 
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
-      console.log("Gmail signup successful:", user);
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    const user = result.user;
+    console.log('Gmail signup successful:', user);
 
-      // Optionally, set display name if not set and name is provided
-      if (!user.displayName && name) {
-        await updateProfile(user, { displayName: name });
-      }
-
-      // Redirect to wishlist or desired page
-      router.push('/wishlist');
-    } catch (err: unknown) {
-      if (err instanceof FirebaseError) {
-        const friendlyMessage = getFriendlyErrorMessage(err.code);
-        setError(friendlyMessage);
-      } else if (err instanceof Error) {
-        setError("An unexpected error occurred. Please try again.");
-      } else {
-        setError("An unexpected error occurred. Please try again.");
-      }
-      console.error("Gmail signup error:", err);
-    } finally {
-      setIsLoading(false);
+    // Optionally, set display name if not set and name is provided
+    if (!user.displayName && name) {
+      await updateProfile(user, { displayName: name });
     }
-  };
+
+    // Create user in the database
+    await createUserInDatabase({
+      name: user.displayName || name || '',
+      login: user.uid, // Using Firebase UID as login
+      email: user.email || '',
+      password_hash: '', // Empty since we don't store passwords
+    });
+
+    // Redirect to wishlist or desired page
+    router.push('/wishlist');
+  } catch (err: unknown) {
+    if (err instanceof FirebaseError) {
+      const friendlyMessage = getFriendlyErrorMessage(err.code);
+      setError(friendlyMessage);
+    } else if (err instanceof Error) {
+      setError('An unexpected error occurred. Please try again.');
+    } else {
+      setError('An unexpected error occurred. Please try again.');
+    }
+    console.error('Gmail signup error:', err);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 flex items-center justify-center p-4">

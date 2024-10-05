@@ -12,7 +12,7 @@ import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { auth, googleProvider, getFriendlyErrorMessage } from "@/components/backend/firebase";
 import { FirebaseError } from "firebase/app";
 
-export function LoginPageComponent() {
+export default function LoginPageComponent() {
   const [email, setEmail] = useState('');       
   const [password, setPassword] = useState(''); 
   const [error, setError] = useState<string>(''); 
@@ -21,13 +21,23 @@ export function LoginPageComponent() {
 
   // Handle Gmail (Google) Login
   const handleGmailLogin = async () => {
-    if (isLoading) return; // Prevent multiple clicks
+    if (isLoading) return;
     setIsLoading(true);
-    setError("");
-
+    setError('');
+  
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      console.log("Gmail login successful:", result.user);
+      const user = result.user;
+      console.log('Gmail login successful:', user);
+  
+      // Ensure user exists in the database
+      await ensureUserInDatabase({
+        name: user.displayName || '',
+        login: user.uid,
+        email: user.email || '',
+        password_hash: '',
+      });
+  
       router.push('/wishlist');
     } catch (err: unknown) {
       if (err instanceof FirebaseError) {
@@ -45,16 +55,26 @@ export function LoginPageComponent() {
   };
 
   // Handle Email/Password Login
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault(); 
-    setError(''); 
-    setIsLoading(true);
+  // Handle Email/Password Login
+const handleSubmit = async (e: FormEvent) => {
+  e.preventDefault();
+  setError('');
+  setIsLoading(true);
 
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      console.log("User logged in:", user);
-      router.push('/wishlist');
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    console.log('User logged in:', user);
+
+    // Ensure user exists in the database
+    await ensureUserInDatabase({
+      name: user.displayName || '',
+      login: user.uid,
+      email: user.email || '',
+      password_hash: '',
+    });
+
+    router.push('/wishlist');
     } catch (err: unknown) {
       if (err instanceof FirebaseError) {
         const friendlyMessage = getFriendlyErrorMessage(err.code);
@@ -69,6 +89,31 @@ export function LoginPageComponent() {
       setIsLoading(false);
     }
   };
+  // Function to ensure user exists in the database
+const ensureUserInDatabase = async (userData: {
+  name: string;
+  login: string;
+  email: string;
+  password_hash: string;
+}) => {
+  try {
+    const response = await fetch('/api/ensureUser', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to ensure user in database');
+    }
+  } catch (error) {
+    console.error('Error ensuring user in database:', error);
+    // Handle error appropriately
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 flex items-center justify-center p-4">

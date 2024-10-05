@@ -1,0 +1,45 @@
+// prisma/schema.prisma
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  user_id      Int    @id @default(autoincrement())
+  name         String
+  login        String @unique
+  email        String @unique
+  password_hash String
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Wishlists {
+  wishlist_id  Int    @id @default(autoincrement())
+  user_id      Int
+  name         String
+  link         String?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@map("wishlists")
+}
+
+model Items {
+  item_id      Int    @id @default(autoincrement())
+  wishlist_id  Int
+  name         String
+  link         String?
+  quantity     Int
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@map("items")
+}
