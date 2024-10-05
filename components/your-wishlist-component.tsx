@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Modal } from '@/components/ui/modal';
+import { AddItemModal } from '@/components/add-item-component'; // Import your AddItemModal
 
 type WishlistItem = {
   id: string;
@@ -31,10 +32,19 @@ export function YourWishlistComponent({ wishlistId, onBack }: YourWishlistCompon
     { id: '3', name: 'Headphones', image: '/images/airpods.jpg', price: 299, contributed: 100 },
   ]);
 
+  const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false); // State to control modal visibility
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const handleAddItem = () => {
-    console.log('Add item clicked');
+  // Function to add a new item to the wishlist
+  const handleAddItem = (newItem: { name: string; image: string; price: number; description: string }) => {
+    const newItemData = {
+      id: (wishlistItems.length + 1).toString(), // Assign a new ID
+      name: newItem.name,
+      image: newItem.image,
+      price: newItem.price,
+      contributed: 0, // Initialize contributed value
+    };
+    setWishlistItems([...wishlistItems, newItemData]); // Add the new item to the list
   };
 
   const handleShareWishlist = () => {
@@ -67,7 +77,7 @@ export function YourWishlistComponent({ wishlistId, onBack }: YourWishlistCompon
         </div>
         <div className="mt-4 md:mt-0 flex justify-center md:justify-end">
           <div className="flex space-x-2">
-            <Button onClick={handleAddItem} size="sm" className="w-24">
+            <Button onClick={() => setIsAddItemModalOpen(true)} size="sm" className="w-24">
               <PlusCircle className="mr-2 h-4 w-4" /> Add
             </Button>
             <Button
@@ -120,6 +130,15 @@ export function YourWishlistComponent({ wishlistId, onBack }: YourWishlistCompon
         </Button>
       </div>
 
+      {/* AddItemModal for adding new items */}
+      {isAddItemModalOpen && (
+        <AddItemModal
+          isOpen={isAddItemModalOpen}
+          onClose={() => setIsAddItemModalOpen(false)}
+          onAddItem={handleAddItem}
+        />
+      )}
+
       {/* Confirmation modal for deletion */}
       {isDeleteModalOpen && (
         <Modal onClose={() => setIsDeleteModalOpen(false)}>
@@ -143,7 +162,7 @@ export function YourWishlistComponent({ wishlistId, onBack }: YourWishlistCompon
     </>
   );
 }
-// 
+
 // Example function to get wishlist name by ID
 function getWishlistNameById(id: string): string {
   const wishlists = [
