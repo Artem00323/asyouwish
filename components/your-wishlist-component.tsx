@@ -1,5 +1,3 @@
-// /components/YourWishlistComponent.tsx
-
 'use client';
 
 import { useState } from 'react';
@@ -10,7 +8,20 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Modal } from '@/components/ui/modal';
 import { AddItemModal } from '@/components/add-item-component'; // Ensure correct path
-import { WishlistItem } from '@/components/ui/types';
+
+// Update ItemData interface to match AddItemModal structure
+interface ItemData {
+  name: string;
+  image: string | File;  // Accept both string and File for the image
+  price: number;
+  description: string;
+}
+
+interface WishlistItem extends Omit<ItemData, 'image'> {
+  id: string;
+  contributed: number;
+  image: string | File; // Allow image to be a string or File
+}
 
 type YourWishlistComponentProps = {
   wishlistId: string;
@@ -18,13 +29,12 @@ type YourWishlistComponentProps = {
 };
 
 export function YourWishlistComponent({ wishlistId, onBack }: YourWishlistComponentProps) {
-  // Get the wishlist name by its ID
   const wishlistName = getWishlistNameById(wishlistId); // Implement this function to get the name
 
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([
-    { id: '1', name: 'Smartphone', image: '/images/iphone.jpg', price: 999, contributed: 250 },
-    { id: '2', name: 'Laptop', image: '/images/macbook.jpg', price: 1499, contributed: 750 },
-    { id: '3', name: 'Headphones', image: '/images/airpods.jpg', price: 299, contributed: 100 },
+    { id: '1', name: 'Smartphone', image: '/images/iphone.jpg', price: 999, contributed: 250, description: 'Smartphone' },
+    { id: '2', name: 'Laptop', image: '/images/macbook.jpg', price: 1499, contributed: 750, description: 'Laptop' },
+    { id: '3', name: 'Headphones', image: '/images/airpods.jpg', price: 299, contributed: 100, description: 'Headphones' },
   ]);
 
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false); // State to control modal visibility
@@ -38,6 +48,7 @@ export function YourWishlistComponent({ wishlistId, onBack }: YourWishlistCompon
       image: newItem.image,
       price: newItem.price,
       contributed: 0, // Initialize contributed value
+      description: newItem.description,
     };
     setWishlistItems([...wishlistItems, newItemData]); // Add the new item to the list
   };
@@ -59,6 +70,13 @@ export function YourWishlistComponent({ wishlistId, onBack }: YourWishlistCompon
     console.log('Wishlist deleted');
     setIsDeleteModalOpen(false);
     onBack(); // Return to wishlist selection after deletion
+  };
+
+  const renderImage = (image: string | File) => {
+    if (typeof image === 'string') {
+      return image;
+    }
+    return URL.createObjectURL(image); // Convert File to a URL
   };
 
   return (
@@ -92,7 +110,7 @@ export function YourWishlistComponent({ wishlistId, onBack }: YourWishlistCompon
           <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
             <div className="relative w-full h-40 md:h-48">
               <Image
-                src={item.image}
+                src={renderImage(item.image)} // Use the renderImage function
                 alt={item.name}
                 fill
                 style={{ objectFit: 'cover' }}
@@ -103,7 +121,7 @@ export function YourWishlistComponent({ wishlistId, onBack }: YourWishlistCompon
               <h3 className="text-lg md:text-xl font-semibold mb-1 md:mb-2">{item.name}</h3>
               <Progress value={(item.contributed / item.price) * 100} className="mb-1 md:mb-2" />
               <p className="text-xs md:text-sm text-gray-600">
-                ${item.contributed} raised of ${item.price}
+                {item.contributed}₽ raised of {item.price}₽
               </p>
             </CardContent>
             <CardFooter className="bg-gray-50 p-2 md:p-4 flex justify-between">

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -9,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import Image from 'next/image';
-import { PlusCircle, Link } from 'lucide-react';
+import { PlusCircle, Link, Upload, RussianRuble } from 'lucide-react';
 
 interface ItemData {
   name: string;
@@ -31,7 +32,6 @@ export function AddItemModal({ isOpen, onClose, onAddItem }: AddItemModalProps) 
   const [isParsing, setIsParsing] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
 
-  // Handle image upload for manual add
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setManualData((prev) => ({ ...prev, image: e.target.files![0] }));
@@ -51,7 +51,7 @@ export function AddItemModal({ isOpen, onClose, onAddItem }: AddItemModalProps) 
       onAddItem(manualData);
       onClose();
     } else {
-      alert('Please fill in all the required fields correctly.');
+      window.alert('Validation Error: Please fill in all the required fields correctly.');
     }
   };
 
@@ -61,7 +61,7 @@ export function AddItemModal({ isOpen, onClose, onAddItem }: AddItemModalProps) 
 
   const handleParseLink = async () => {
     if (!linkData) {
-      alert('Please enter a product URL.');
+      window.alert('Error: Please enter a product URL.');
       return;
     }
 
@@ -81,7 +81,6 @@ export function AddItemModal({ isOpen, onClose, onAddItem }: AddItemModalProps) 
 
       if (response.ok) {
         setParsedItem(data);
-        // Automatically populate the manual form when switching from Link API Add
         setManualData({
           name: data.name,
           image: data.image,
@@ -89,11 +88,11 @@ export function AddItemModal({ isOpen, onClose, onAddItem }: AddItemModalProps) 
           description: data.description,
         });
       } else {
-        alert(data.error || 'Failed to parse the product URL.');
+        window.alert(data.error || 'Failed to parse the product URL.');
       }
     } catch (error) {
       console.error('Error parsing link:', error);
-      alert('An unexpected error occurred while parsing the link.');
+      window.alert('Error: An unexpected error occurred while parsing the link.');
     } finally {
       setIsParsing(false);
     }
@@ -117,110 +116,143 @@ export function AddItemModal({ isOpen, onClose, onAddItem }: AddItemModalProps) 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
-          <DialogTitle>Add New Item</DialogTitle>
+          <DialogTitle className="text-2xl font-bold">Add New Item</DialogTitle>
         </DialogHeader>
         <Tabs defaultValue="manual" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-4">
-            <TabsTrigger value="manual">Manual Add</TabsTrigger>
-            <TabsTrigger value="link">Link API Add</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="manual" className="text-sm">Manual Add</TabsTrigger>
+            <TabsTrigger value="link" className="text-sm">Link API Add</TabsTrigger>
           </TabsList>
 
-          {/* Scrollable content for Manual Add */}
           <TabsContent value="manual">
-            <Card className="max-h-[400px] overflow-y-auto p-4 rounded-lg">
-              <CardContent className="space-y-4">
+            <Card className="border-none shadow-none">
+              <CardContent className="space-y-6 p-0">
+                {/* Manual Add Content */}
                 <div className="space-y-2">
-                  <Label htmlFor="name">Product Name</Label>
-                  <Input id="name" name="name" value={manualData.name} onChange={handleManualDataChange} />
+                  <Label htmlFor="name" className="text-sm font-medium">Product Name</Label>
+                  <Input id="name" name="name" value={manualData.name} onChange={handleManualDataChange} className="border-gray-300" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="image">Upload Image</Label>
-                  <Input id="image" name="image" type="file" onChange={handleImageUpload} />
-                  {manualData.image && typeof manualData.image !== 'string' && (
-                    <Image
-                      src={URL.createObjectURL(manualData.image)}
-                      alt={manualData.name}
-                      width={100}
-                      height={100}
-                      className="rounded-md mt-2"
+                  <Label htmlFor="image" className="text-sm font-medium">Upload Image</Label>
+                  <div className="flex items-center space-x-2">
+                    <Label htmlFor="image-upload" className="cursor-pointer flex items-center bg-black text-white px-4 py-2 rounded-md hover:bg-gray-700">
+                      <Upload className="w-5 h-5 text-white mr-2" />
+                      <span>Choose Image</span>
+                    </Label>
+                    <input
+                      id="image-upload"
+                      name="image"
+                      type="file"
+                      onChange={handleImageUpload}
+                      className="hidden"
                     />
+                  </div>
+                  {manualData.image && typeof manualData.image !== 'string' && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Image
+                        src={URL.createObjectURL(manualData.image)}
+                        alt={manualData.name}
+                        width={100}
+                        height={100}
+                        className="rounded-md mt-2 object-cover"
+                      />
+                    </motion.div>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="price">Price (₽)</Label>
-                  <Input
-                    id="price"
-                    name="price"
-                    type="number"
-                    value={manualData.price}
-                    onChange={handleManualDataChange}
-                    min="0"
-                    step="any"
-                    className="pl-8"
-                    placeholder="₽"
-                  />
+                  <Label htmlFor="price" className="text-sm font-medium">Price (₽)</Label>
+                  <div className="relative">
+                    <RussianRuble className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Input
+                      id="price"
+                      name="price"
+                      type="number"
+                      value={manualData.price}
+                      onChange={handleManualDataChange}
+                      min="0"
+                      step="any"
+                      className="pl-10 border-gray-300"
+                      placeholder="0.00"
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
+                  <Label htmlFor="description" className="text-sm font-medium">Description</Label>
                   <Textarea
                     id="description"
                     name="description"
                     value={manualData.description}
                     onChange={handleManualDataChange}
+                    className="border-gray-300 min-h-[100px]"
                   />
                 </div>
-                <Button onClick={handleAddManualItem} className="w-full">
+                <Button onClick={handleAddManualItem} className="w-full hover:bg-gray-700">
                   <PlusCircle className="mr-2 h-4 w-4" /> Add Item
                 </Button>
               </CardContent>
             </Card>
           </TabsContent>
 
-          {/* Scrollable content for Link API Add */}
           <TabsContent value="link">
-            <Card className="max-h-[400px] overflow-y-auto p-4 rounded-lg">
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="productLink">Product Link</Label>
-                  <Input id="productLink" value={linkData} onChange={handleLinkDataChange} />
-                </div>
-                <Button onClick={handleParseLink} className="w-full" disabled={isParsing}>
-                  {isParsing ? 'Parsing...' : <><Link className="mr-2 h-4 w-4" /> Parse Link</>}
-                </Button>
-                {parsedItem && (
-                  <Card className="mt-4">
-                    <CardContent className="pt-4">
-                      <div className="relative w-full h-48 mb-4">
-                        <Image
-                          src={parsedItem.image}
-                          alt={parsedItem.name}
-                          fill
-                          style={{ objectFit: 'cover' }}
-                          className="rounded-md"
-                        />
-                      </div>
-                      <h3 className="text-lg font-semibold mb-2">{parsedItem.name}</h3>
-                      <p className="text-sm text-muted-foreground mb-2">${parsedItem.price.toFixed(2)}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {showFullDescription
-                          ? parsedItem.description
-                          : truncateDescription(parsedItem.description, 100)}
-                        {parsedItem.description.length > 100 && (
-                          <span className="text-blue-500 cursor-pointer" onClick={toggleShowMore}>
-                            {showFullDescription ? ' Show less' : ' Show more'}
-                          </span>
-                        )}
-                      </p>
-                      <Button onClick={handleAddParsedItem} className="w-full mt-4">
-                        <PlusCircle className="mr-2 h-4 w-4" /> Add Parsed Item
-                      </Button>
-                    </CardContent>
-                  </Card>
-                )}
-              </CardContent>
-            </Card>
+            {/* Link API Add content - Added scrollable container */}
+            <div className="max-h-[400px] overflow-y-auto px-4"> {/* Added padding to prevent content overlap */}
+              <Card className="border-none shadow-none">
+                <CardContent className="space-y-6 p-0">
+                  <div className="space-y-2">
+                    <Label htmlFor="productLink" className="text-sm font-medium">Product Link</Label>
+                    <Input id="productLink" value={linkData} onChange={handleLinkDataChange} className="border-gray-300" />
+                  </div>
+                  <Button onClick={handleParseLink} className="w-full hover:bg-gray-700" disabled={isParsing}>
+                    {isParsing ? 'Parsing...' : <><Link className="mr-2 h-4 w-4" /> Parse Link</>}
+                  </Button>
+                  <AnimatePresence>
+                    {parsedItem && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <Card className="mt-4 border border-gray-200">
+                          <CardContent className="p-4">
+                            <div className="relative w-full h-40 mb-4 overflow-hidden rounded-md">
+                              <Image
+                                src={typeof parsedItem.image === 'string' ? parsedItem.image : URL.createObjectURL(parsedItem.image)}
+                                alt={parsedItem.name}
+                                fill
+                                style={{ objectFit: 'cover' }}
+                                className="transition-transform duration-300 hover:scale-105"
+                              />
+                            </div>
+                            <h3 className="text-lg font-semibold mb-2">{parsedItem.name}</h3>
+                            <p className="text-sm text-violet-600 font-medium mb-2">{parsedItem.price.toFixed(2)}₽</p>
+                            <p className="text-sm text-gray-600">
+                              {showFullDescription
+                                ? parsedItem.description
+                                : truncateDescription(parsedItem.description, 100)}
+                              {parsedItem.description.length > 100 && (
+                                <button className="text-violet-600 hover:text-violet-700 ml-1 focus:outline-none" onClick={toggleShowMore}>
+                                  {showFullDescription ? 'Show less' : 'Show more'}
+                                </button>
+                              )}
+                            </p>
+                            <Button onClick={handleAddParsedItem} className="w-full mt-4 hover:bg-gray-700">
+                              <PlusCircle className="mr-2 h-4 w-4" /> Add Parsed Item
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </CardContent>
+              </Card>
+            </div> {/* End of scrollable container */}
           </TabsContent>
         </Tabs>
       </DialogContent>
