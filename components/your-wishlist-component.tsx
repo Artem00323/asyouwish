@@ -7,14 +7,21 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Modal } from '@/components/ui/modal';
+import { AddItemModal } from '@/components/add-item-component'; // Ensure correct path
 
-type WishlistItem = {
-  id: string;
+// Update ItemData interface to match AddItemModal structure
+interface ItemData {
   name: string;
-  image: string;
+  image: string | File;  // Accept both string and File for the image
   price: number;
+  description: string;
+}
+
+interface WishlistItem extends Omit<ItemData, 'image'> {
+  id: string;
   contributed: number;
-};
+  image: string | File; // Allow image to be a string or File
+}
 
 type YourWishlistComponentProps = {
   wishlistId: string;
@@ -22,19 +29,28 @@ type YourWishlistComponentProps = {
 };
 
 export function YourWishlistComponent({ wishlistId, onBack }: YourWishlistComponentProps) {
-  // Get the wishlist name by its ID
   const wishlistName = getWishlistNameById(wishlistId); // Implement this function to get the name
 
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([
-    { id: '1', name: 'Smartphone', image: '/images/iphone.jpg', price: 999, contributed: 250 },
-    { id: '2', name: 'Laptop', image: '/images/macbook.jpg', price: 1499, contributed: 750 },
-    { id: '3', name: 'Headphones', image: '/images/airpods.jpg', price: 299, contributed: 100 },
+    { id: '1', name: 'Smartphone', image: '/images/iphone.jpg', price: 999, contributed: 250, description: 'Smartphone' },
+    { id: '2', name: 'Laptop', image: '/images/macbook.jpg', price: 1499, contributed: 750, description: 'Laptop' },
+    { id: '3', name: 'Headphones', image: '/images/airpods.jpg', price: 299, contributed: 100, description: 'Headphones' },
   ]);
 
+  const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false); // State to control modal visibility
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const handleAddItem = () => {
-    console.log('Add item clicked');
+  // Function to add a new item to the wishlist
+  const handleAddItem = (newItem: ItemData) => {
+    const newItemData: WishlistItem = {
+      id: (wishlistItems.length + 1).toString(), // Assign a new ID
+      name: newItem.name,
+      image: newItem.image,
+      price: newItem.price,
+      contributed: 0, // Initialize contributed value
+      description: newItem.description,
+    };
+    setWishlistItems([...wishlistItems, newItemData]); // Add the new item to the list
   };
 
   const handleShareWishlist = () => {
@@ -56,6 +72,13 @@ export function YourWishlistComponent({ wishlistId, onBack }: YourWishlistCompon
     onBack(); // Return to wishlist selection after deletion
   };
 
+  const renderImage = (image: string | File) => {
+    if (typeof image === 'string') {
+      return image;
+    }
+    return URL.createObjectURL(image); // Convert File to a URL
+  };
+
   return (
     <>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
@@ -67,7 +90,7 @@ export function YourWishlistComponent({ wishlistId, onBack }: YourWishlistCompon
         </div>
         <div className="mt-4 md:mt-0 flex justify-center md:justify-end">
           <div className="flex space-x-2">
-            <Button onClick={handleAddItem} size="sm" className="w-24">
+            <Button onClick={() => setIsAddItemModalOpen(true)} size="sm" className="w-24">
               <PlusCircle className="mr-2 h-4 w-4" /> Add
             </Button>
             <Button
@@ -87,7 +110,7 @@ export function YourWishlistComponent({ wishlistId, onBack }: YourWishlistCompon
           <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
             <div className="relative w-full h-40 md:h-48">
               <Image
-                src={item.image}
+                src={renderImage(item.image)} // Use the renderImage function
                 alt={item.name}
                 fill
                 style={{ objectFit: 'cover' }}
@@ -98,7 +121,7 @@ export function YourWishlistComponent({ wishlistId, onBack }: YourWishlistCompon
               <h3 className="text-lg md:text-xl font-semibold mb-1 md:mb-2">{item.name}</h3>
               <Progress value={(item.contributed / item.price) * 100} className="mb-1 md:mb-2" />
               <p className="text-xs md:text-sm text-gray-600">
-                ${item.contributed} raised of ${item.price}
+                {item.contributed}₽ raised of {item.price}₽
               </p>
             </CardContent>
             <CardFooter className="bg-gray-50 p-2 md:p-4 flex justify-between">
@@ -119,6 +142,15 @@ export function YourWishlistComponent({ wishlistId, onBack }: YourWishlistCompon
           <Trash2 className="mr-2 h-4 w-4" /> Delete Wishlist
         </Button>
       </div>
+
+      {/* AddItemModal for adding new items */}
+      {isAddItemModalOpen && (
+        <AddItemModal
+          isOpen={isAddItemModalOpen}
+          onClose={() => setIsAddItemModalOpen(false)}
+          onAddItem={handleAddItem}
+        />
+      )}
 
       {/* Confirmation modal for deletion */}
       {isDeleteModalOpen && (
@@ -143,7 +175,7 @@ export function YourWishlistComponent({ wishlistId, onBack }: YourWishlistCompon
     </>
   );
 }
-// 
+
 // Example function to get wishlist name by ID
 function getWishlistNameById(id: string): string {
   const wishlists = [

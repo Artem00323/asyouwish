@@ -11,3 +11,11 @@ export type Event = {
     type: 'birthday' | 'event';
     friendId: string;
 };
+
+export type WishlistItem = {
+    id: string;
+    name: string;
+    image: string;
+    price: number;
+    contributed: number;
+};
