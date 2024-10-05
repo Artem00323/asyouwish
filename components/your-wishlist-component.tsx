@@ -1,3 +1,5 @@
+// /components/YourWishlistComponent.tsx
+
 'use client';
 
 import { useState } from 'react';
@@ -7,15 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Modal } from '@/components/ui/modal';
-import { AddItemModal } from '@/components/add-item-component'; // Import your AddItemModal
-
-type WishlistItem = {
-  id: string;
-  name: string;
-  image: string;
-  price: number;
-  contributed: number;
-};
+import { AddItemModal } from '@/components/add-item-component'; // Ensure correct path
+import { WishlistItem } from '@/components/ui/types';
 
 type YourWishlistComponentProps = {
   wishlistId: string;
@@ -36,8 +31,8 @@ export function YourWishlistComponent({ wishlistId, onBack }: YourWishlistCompon
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   // Function to add a new item to the wishlist
-  const handleAddItem = (newItem: { name: string; image: string; price: number; description: string }) => {
-    const newItemData = {
+  const handleAddItem = (newItem: ItemData) => {
+    const newItemData: WishlistItem = {
       id: (wishlistItems.length + 1).toString(), // Assign a new ID
       name: newItem.name,
       image: newItem.image,
