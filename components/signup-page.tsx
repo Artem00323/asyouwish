@@ -1,5 +1,4 @@
 // components/signup-page.tsx
-
 'use client';
 
 import { useState, FormEvent } from 'react';
@@ -25,7 +24,7 @@ import {
 import { auth, googleProvider, getFriendlyErrorMessage } from '@/components/backend/firebase';
 import { FirebaseError } from 'firebase/app';
 
-export function SignupPageComponent() {
+export default function SignupPageComponent() { // Default export
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState(''); // Even though we don't store it
   const [name, setName] = useState('');
@@ -33,126 +32,122 @@ export function SignupPageComponent() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-// Function to create user in the database
-const createUserInDatabase = async (userData: {
-  name: string;
-  login: string;
-  email: string;
-  password_hash: string;
-}) => {
-  try {
-    const response = await fetch('/api/createUser', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(userData),
-    });
+  // Function to ensure user exists in the database
+  const ensureUserInDatabase = async (userData: {
+    user_id: string;
+    name: string;
+    email: string;
+    password_hash: string;
+  }) => {
+    try {
+      const response = await fetch('/api/ensureUser', { // Consistent endpoint
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
 
-    if (!response.ok) {
-      throw new Error('Failed to create user in database');
+      if (!response.ok) {
+        throw new Error('Failed to ensure user in database');
+      }
+      console.log('User successfully ensured in database:', userData);
+    } catch (error) {
+      console.error('Error ensuring user in database:', error);
+      setError("Failed to save user data. Please try again.");
     }
-    console.log('Пользователь успешно создан в базе данных:', userData);
-  } catch (error) {
-    console.error('Error creating user in database:', error);
-    // Handle error appropriately
-  }
-};
+  };
 
+  // Handle Email/Password Signup
+  const handleSignup = async (e: FormEvent) => {
+    e.preventDefault();
+    if (isLoading) return;
+    setIsLoading(true);
+    setError('');
 
-// Handle Email/Password Signup
-const handleSignup = async (e: FormEvent) => {
-  e.preventDefault();
-  if (isLoading) return;
-  setIsLoading(true);
-  setError('');
+    try {
+      // Firebase sign-up logic
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
-  try {
-    // Firebase sign-up logic
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-
-    // Set the display name
-    await updateProfile(user, { displayName: name });
-
-    console.log('User created:', user);
-
-    // Create user in the database
-    await createUserInDatabase({
-      name: name,
-      login: user.uid, // Using Firebase UID as login
-      email: user.email || '',
-      password_hash: '', // Empty since we don't store passwords
-    });
-
-    // Redirect to wishlist or desired page
-    router.push('/wishlist');
-  } catch (err: unknown) {
-    if (err instanceof FirebaseError) {
-      const friendlyMessage = getFriendlyErrorMessage(err.code);
-      setError(friendlyMessage);
-    } else if (err instanceof Error) {
-      setError('An unexpected error occurred. Please try again.');
-    } else {
-      setError('An unexpected error occurred. Please try again.');
-    }
-    console.error('Signup error:', err);
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-
-  // Handle Gmail (Google) Signup
-const handleGmailSignup = async () => {
-  if (isLoading) return;
-  setIsLoading(true);
-  setError('');
-
-  try {
-    const result = await signInWithPopup(auth, googleProvider);
-    const user = result.user;
-    console.log('Gmail signup successful:', user);
-
-    // Optionally, set display name if not set and name is provided
-    if (!user.displayName && name) {
+      // Set the display name
       await updateProfile(user, { displayName: name });
+
+      console.log('User created:', user);
+
+      // Ensure user exists in the database
+      await ensureUserInDatabase({
+        user_id: user.uid, // Using Firebase UID as user_id
+        name: name,
+        email: user.email || '',
+        password_hash: '', // Not storing passwords
+      });
+
+      // Redirect to wishlist or desired page
+      router.push('/wishlist');
+    } catch (err: unknown) {
+      if (err instanceof FirebaseError) {
+        const friendlyMessage = getFriendlyErrorMessage(err.code);
+        setError(friendlyMessage);
+      } else if (err instanceof Error) {
+        setError('An unexpected error occurred. Please try again.');
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
+      console.error('Signup error:', err);
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    // Create user in the database
-    await createUserInDatabase({
-      name: user.displayName || name || '',
-      login: user.uid, // Using Firebase UID as login
-      email: user.email || '',
-      password_hash: '', // Empty since we don't store passwords
-    });
+  // Handle Google Signup
+  const handleGoogleSignup = async () => {
+    if (isLoading) return;
+    setIsLoading(true);
+    setError('');
 
-    // Redirect to wishlist or desired page
-    router.push('/wishlist');
-  } catch (err: unknown) {
-    if (err instanceof FirebaseError) {
-      const friendlyMessage = getFriendlyErrorMessage(err.code);
-      setError(friendlyMessage);
-    } else if (err instanceof Error) {
-      setError('An unexpected error occurred. Please try again.');
-    } else {
-      setError('An unexpected error occurred. Please try again.');
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      console.log('Google signup successful:', user);
+
+      // Optionally, set display name if not set and name is provided
+      if (!user.displayName && name) {
+        await updateProfile(user, { displayName: name });
+      }
+
+      // Ensure user exists in the database
+      await ensureUserInDatabase({
+        user_id: user.uid, // Using Firebase UID as user_id
+        name: user.displayName || name || '',
+        email: user.email || '',
+        password_hash: '', // Not storing passwords
+      });
+
+      // Redirect to wishlist or desired page
+      router.push('/wishlist');
+    } catch (err: unknown) {
+      if (err instanceof FirebaseError) {
+        const friendlyMessage = getFriendlyErrorMessage(err.code);
+        setError(friendlyMessage);
+      } else if (err instanceof Error) {
+        setError('An unexpected error occurred. Please try again.');
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
+      console.error('Google signup error:', err);
+    } finally {
+      setIsLoading(false);
     }
-    console.error('Gmail signup error:', err);
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Create an account</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Create an Account</CardTitle>
           <CardDescription className="text-center">
-            Enter your email below to create your account
+            Enter your details below to create your account
           </CardDescription>
         </CardHeader>
 
@@ -178,8 +173,9 @@ const handleGmailSignup = async () => {
           </div>
         )}
 
-        <CardContent className="space-y-4">
-          <form onSubmit={handleSignup} className="space-y-4">
+        {/* Start of the form */}
+        <form onSubmit={handleSignup}>
+          <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Name</Label>
               <Input
@@ -218,26 +214,26 @@ const handleGmailSignup = async () => {
             <Button className="w-full" type="submit" disabled={isLoading}>
               {isLoading ? "Creating Account..." : "Create Account"}
             </Button>
-          </form>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+              </div>
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-            </div>
-          </div>
-          <Button 
-            variant="outline" 
-            className="w-full" 
-            onClick={handleGmailSignup} 
-            disabled={isLoading}
-          >
-            <Mail className="mr-2 h-4 w-4" /> {isLoading ? "Signing Up..." : "Sign up with Gmail"}
-          </Button>
-        </CardContent>
+            <Button 
+              variant="outline" 
+              className="w-full" 
+              onClick={handleGoogleSignup} 
+              disabled={isLoading}
+            >
+              <Mail className="mr-2 h-4 w-4" /> {isLoading ? "Signing Up..." : "Sign up with Google"}
+            </Button>
+          </CardContent>
+        </form>
 
+        {/* End of the form */}
         <CardFooter>
           <div className="text-sm text-muted-foreground text-center w-full">
             Already have an account?{" "}

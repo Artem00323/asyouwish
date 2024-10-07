@@ -1,3 +1,4 @@
+// components/login-page.tsx
 'use client';
 
 import { useState, FormEvent } from 'react';
@@ -19,25 +20,25 @@ export default function LoginPageComponent() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter(); 
 
-  // Handle Gmail (Google) Login
-  const handleGmailLogin = async () => {
+  // Handle Google Login
+  const handleGoogleLogin = async () => {
     if (isLoading) return;
     setIsLoading(true);
     setError('');
-  
+
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
-      console.log('Gmail login successful:', user);
-  
+      console.log('Google login successful:', user);
+
       // Ensure user exists in the database
       await ensureUserInDatabase({
+        user_id: user.uid,
         name: user.displayName || '',
-        login: user.uid,
         email: user.email || '',
-        password_hash: '', // Since using Google, password_hash can be empty or handled differently
+        password_hash: '', // Not needed for OAuth
       });
-  
+
       router.push('/wishlist');
     } catch (err: unknown) {
       if (err instanceof FirebaseError) {
@@ -48,7 +49,7 @@ export default function LoginPageComponent() {
       } else {
         setError("An unexpected error occurred. Please try again.");
       }
-      console.error("Gmail login error:", err);
+      console.error("Google login error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -59,20 +60,20 @@ export default function LoginPageComponent() {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-  
+
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       console.log('User logged in:', user);
-  
+
       // Ensure user exists in the database
       await ensureUserInDatabase({
+        user_id: user.uid,
         name: user.displayName || '',
-        login: user.uid,
         email: user.email || '',
-        password_hash: '', // If you handle password hashing separately, update accordingly
+        password_hash: '', // Not needed as Firebase handles it
       });
-  
+
       router.push('/wishlist');
     } catch (err: unknown) {
       if (err instanceof FirebaseError) {
@@ -91,26 +92,26 @@ export default function LoginPageComponent() {
 
   // Function to ensure user exists in the database
   const ensureUserInDatabase = async (userData: {
+    user_id: string;
     name: string;
-    login: string;
     email: string;
     password_hash: string;
   }) => {
     try {
-      const response = await fetch('/api/ensureUser', {
+      const response = await fetch('/api/ensureUser', { // Consistent endpoint
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(userData),
       });
-  
+
       if (!response.ok) {
         throw new Error('Failed to ensure user in database');
       }
     } catch (error) {
       console.error('Error ensuring user in database:', error);
-      // Handle error appropriately
+      setError("Failed to save user data. Please try again.");
     }
   };
 
@@ -184,10 +185,10 @@ export default function LoginPageComponent() {
             <Button 
               variant="outline" 
               className="w-full" 
-              onClick={handleGmailLogin} 
+              onClick={handleGoogleLogin} 
               disabled={isLoading}
             >
-              <Mail className="mr-2 h-4 w-4" /> {isLoading ? "Loading..." : "Login with Gmail"}
+              <Mail className="mr-2 h-4 w-4" /> {isLoading ? "Loading..." : "Login with Google"}
             </Button>
           </CardContent>
         </form>
