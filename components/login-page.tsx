@@ -35,7 +35,7 @@ export default function LoginPageComponent() {
         name: user.displayName || '',
         login: user.uid,
         email: user.email || '',
-        password_hash: '',
+        password_hash: '', // Since using Google, password_hash can be empty or handled differently
       });
   
       router.push('/wishlist');
@@ -55,26 +55,25 @@ export default function LoginPageComponent() {
   };
 
   // Handle Email/Password Login
-  // Handle Email/Password Login
-const handleSubmit = async (e: FormEvent) => {
-  e.preventDefault();
-  setError('');
-  setIsLoading(true);
-
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-    console.log('User logged in:', user);
-
-    // Ensure user exists in the database
-    await ensureUserInDatabase({
-      name: user.displayName || '',
-      login: user.uid,
-      email: user.email || '',
-      password_hash: '',
-    });
-
-    router.push('/wishlist');
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+  
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      console.log('User logged in:', user);
+  
+      // Ensure user exists in the database
+      await ensureUserInDatabase({
+        name: user.displayName || '',
+        login: user.uid,
+        email: user.email || '',
+        password_hash: '', // If you handle password hashing separately, update accordingly
+      });
+  
+      router.push('/wishlist');
     } catch (err: unknown) {
       if (err instanceof FirebaseError) {
         const friendlyMessage = getFriendlyErrorMessage(err.code);
@@ -89,31 +88,31 @@ const handleSubmit = async (e: FormEvent) => {
       setIsLoading(false);
     }
   };
+
   // Function to ensure user exists in the database
-const ensureUserInDatabase = async (userData: {
-  name: string;
-  login: string;
-  email: string;
-  password_hash: string;
-}) => {
-  try {
-    const response = await fetch('/api/ensureUser', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(userData),
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to ensure user in database');
+  const ensureUserInDatabase = async (userData: {
+    name: string;
+    login: string;
+    email: string;
+    password_hash: string;
+  }) => {
+    try {
+      const response = await fetch('/api/ensureUser', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to ensure user in database');
+      }
+    } catch (error) {
+      console.error('Error ensuring user in database:', error);
+      // Handle error appropriately
     }
-  } catch (error) {
-    console.error('Error ensuring user in database:', error);
-    // Handle error appropriately
-  }
-};
-
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 flex items-center justify-center p-4">
