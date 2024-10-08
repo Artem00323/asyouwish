@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { Modal } from '@/components/ui/modal';
 import { AddItemModal } from '@/components/add-item-component'; // Ensure correct path
 import QRCode from 'react-qr-code'; // Import QRCode component
+import Image from 'next/image'; // Import Image component
 
 // Define the Wishlist type
 type Wishlist = {
@@ -38,7 +39,12 @@ type YourWishlistComponentProps = {
   onBack: () => void;
 };
 
-export function YourWishlistComponent({ wishlistId, wishlists, onDeleteWishlist, onBack }: YourWishlistComponentProps) {
+export function YourWishlistComponent({
+  wishlistId,
+  wishlists,
+  onDeleteWishlist,
+  onBack,
+}: YourWishlistComponentProps) {
   const wishlist = wishlists.find((w) => w.id === wishlistId);
   const wishlistName = wishlist ? wishlist.name : 'Your Wishlist';
   const wishlistEmoji = wishlist ? wishlist.emoji : '🎁';
@@ -124,11 +130,22 @@ export function YourWishlistComponent({ wishlistId, wishlists, onDeleteWishlist,
         {wishlistItems.map((item) => (
           <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
             <div className="relative w-full h-40 md:h-48">
-              <img
-                src={renderImage(item.image)} // Use the renderImage function
-                alt={item.name}
-                className="w-full h-full object-cover rounded-t-md"
-              />
+              {typeof item.image === 'string' ? (
+                <Image
+                  src={renderImage(item.image)}
+                  alt={item.name}
+                  layout="fill"
+                  objectFit="cover"
+                  className="rounded-t-md"
+                />
+              ) : (
+                // For dynamic images (File objects), we need to use <img> tag
+                <img
+                  src={renderImage(item.image)}
+                  alt={item.name}
+                  className="w-full h-full object-cover rounded-t-md"
+                />
+              )}
             </div>
             <CardContent className="p-2 md:p-4">
               <h3 className="text-lg md:text-xl font-semibold mb-1 md:mb-2">{item.name}</h3>
