@@ -12,39 +12,64 @@ import { ProfileComponent } from '@/components/profile-component';
 import { WishlistSelectionComponent } from '@/components/ui/wishlist-selection-component';
 import { Event } from '@/components/ui/types';
 
-// Тип вкладок
+// Define the types
 export type Tab = 'your-wishlist' | 'friends-wishlists' | 'calendar-events' | 'profile';
 
+type Wishlist = {
+  id: string;
+  name: string;
+  description: string;
+  emoji: string; // Updated to use emoji
+};
+
 export function WishlistPageComponent() {
-  // Состояние для активной вкладки
   const [activeTab, setActiveTab] = useState<Tab>('your-wishlist');
   const [selectedWishlistId, setSelectedWishlistId] = useState<string | null>(null);
 
-  // Пример данных для календаря
+  // Sample data for the calendar
   const events: Event[] = [
     { id: uuidv4(), title: "Alice's Birthday", date: new Date(2024, 8, 15), type: 'birthday', friendId: 'alice123' },
     { id: uuidv4(), title: "Bob's Graduation", date: new Date(2024, 9, 20), type: 'event', friendId: 'bob456' },
-    // ... другие события
+    // ... other events
   ];
+
+  // State for wishlists
+  const [wishlists, setWishlists] = useState<Wishlist[]>([
+    { id: '1', name: 'Birthday Wishes', description: 'Wishlist for my upcoming birthday.', emoji: '🎂' },
+    { id: '2', name: 'New Year Gifts', description: 'Items for the new year.', emoji: '🎉' },
+    { id: '3', name: 'Wedding Registry', description: 'Our wedding gift list.', emoji: '💍' },
+  ]);
+
+  // Function to delete a wishlist
+  const handleDeleteWishlist = (id: string) => {
+    setWishlists(wishlists.filter((wishlist) => wishlist.id !== id));
+    setSelectedWishlistId(null); // Return to wishlist selection
+  };
 
   return (
     <div className="flex h-screen bg-gray-100">
-      {/* Sidebar для больших экранов */}
+      {/* Sidebar for larger screens */}
       <div className="hidden md:block">
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       </div>
 
-      {/* Основная область контента и навигация снизу */}
+      {/* Main content area and bottom navigation */}
       <div className="flex flex-col flex-1 relative">
-        {/* Основной контент */}
+        {/* Main content */}
         <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-20 md:pb-8">
-          {/* Отображение контента в зависимости от активной вкладки */}
+          {/* Display content based on active tab */}
           {activeTab === 'your-wishlist' && (
             selectedWishlistId === null ? (
-              <WishlistSelectionComponent onSelectWishlist={setSelectedWishlistId} />
+              <WishlistSelectionComponent
+                wishlists={wishlists}
+                setWishlists={setWishlists}
+                onSelectWishlist={setSelectedWishlistId}
+              />
             ) : (
               <YourWishlistComponent
                 wishlistId={selectedWishlistId}
+                wishlists={wishlists}
+                onDeleteWishlist={handleDeleteWishlist}
                 onBack={() => setSelectedWishlistId(null)}
               />
             )
@@ -54,13 +79,13 @@ export function WishlistPageComponent() {
           {activeTab === 'profile' && <ProfileComponent />}
         </main>
 
-        {/* Навигация внизу для мобильных устройств */}
+        {/* Bottom navigation for mobile devices */}
         <div className="md:hidden fixed bottom-0 left-0 right-0 z-10">
           <BottomNavBar activeTab={activeTab} setActiveTab={setActiveTab} />
         </div>
       </div>
     </div>
 
-    
+
   );
 }

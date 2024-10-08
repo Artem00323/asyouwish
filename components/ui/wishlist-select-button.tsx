@@ -1,37 +1,32 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import Image from 'next/image';
-import { ChevronRight } from 'lucide-react';
-
 type WishlistSelectButtonProps = {
   id: string;
   name: string;
   description: string;
-  image: string;
+  emoji: string; // Use emoji instead of image
   onSelect: (id: string) => void;
 };
 
-export function WishlistSelectButton({ id, name, description, image, onSelect }: WishlistSelectButtonProps) {
+export function WishlistSelectButton({
+  id,
+  name,
+  description,
+  emoji,
+  onSelect,
+}: WishlistSelectButtonProps) {
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
-      <div className="relative w-full h-40">
-        <Image
-          src={image}
-          alt={name}
-          fill
-          style={{ objectFit: 'cover' }}
-          className="rounded-t-md"
-        />
+    <button
+      onClick={() => onSelect(id)}
+      className="border rounded-md p-4 hover:shadow-lg transition-shadow duration-300 text-left w-full"
+    >
+      <div className="flex items-center">
+        <div className="text-6xl mr-4">{emoji || '🎁'}</div> {/* Display the emoji */}
+        <div>
+          <h3 className="text-xl font-semibold">{name}</h3>
+          <p className="text-sm text-gray-600">{description}</p>
+        </div>
       </div>
-      <CardContent className="p-4">
-        <h3 className="text-xl font-semibold mb-2">{name}</h3>
-        <p className="text-gray-600 mb-4">{description}</p>
-        <Button variant="outline" size="default" className="w-full" onClick={() => onSelect(id)}>
-          View Wishlist <ChevronRight className="w-4 h-4 ml-2" />
-        </Button>
-      </CardContent>
-    </Card>
+    </button>
   );
 }
