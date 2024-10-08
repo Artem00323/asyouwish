@@ -60,7 +60,6 @@ export function WishlistSelectionComponent({
       {/* AddWishlistModal */}
       {isAddWishlistModalOpen && (
         <AddWishlistModal
-          isOpen={isAddWishlistModalOpen}
           onClose={() => setIsAddWishlistModalOpen(false)}
           onAddWishlist={handleAddWishlist}
         />
@@ -71,12 +70,11 @@ export function WishlistSelectionComponent({
 
 // Define the AddWishlistModal component
 type AddWishlistModalProps = {
-  isOpen: boolean;
   onClose: () => void;
   onAddWishlist: (wishlist: Omit<Wishlist, 'id'>) => void;
 };
 
-function AddWishlistModal({ isOpen, onClose, onAddWishlist }: AddWishlistModalProps) {
+function AddWishlistModal({ onClose, onAddWishlist }: AddWishlistModalProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [eventType, setEventType] = useState('birthday');
@@ -132,7 +130,7 @@ function AddWishlistModal({ isOpen, onClose, onAddWishlist }: AddWishlistModalPr
             onChange={(e) => setEventType(e.target.value)}
           >
             <option value="birthday">Birthday</option>
-            <option value="newyear">New Year</option> {/* Changed value to match key */}
+            <option value="newyear">New Year</option>
             <option value="wedding">Wedding</option>
             <option value="graduation">Graduation</option>
           </select>
