@@ -1,7 +1,8 @@
+// components/wishlist-page.tsx
+
 'use client';
 
-import { useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import { useState, useEffect } from 'react';
 
 import Sidebar from '@/components/sidebar';
 import BottomNavBar from '@/components/bottom-nav-bar';
@@ -10,9 +11,11 @@ import { FriendsWishlists } from '@/components/friends-wishlist-component';
 import { CalendarComponent } from '@/components/calendar-component';
 import { ProfileComponent } from '@/components/profile-component';
 import { WishlistSelectionComponent } from '@/components/ui/wishlist-selection-component';
-import { Event } from '@/components/ui/types';
 
-// Define the types
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '@/components/backend/firebase';
+
+// Определяем типы
 export type Tab = 'your-wishlist' | 'friends-wishlists' | 'calendar-events' | 'profile';
 
 type Wishlist = {
@@ -27,75 +30,106 @@ export function WishlistPageComponent() {
   const [activeTab, setActiveTab] = useState<Tab>('your-wishlist');
   const [selectedWishlistId, setSelectedWishlistId] = useState<string | null>(null);
 
-  // Sample data for the calendar
-  const events: Event[] = [
-    {
-      id: uuidv4(),
-      title: "Alice's Birthday",
-      date: new Date(2024, 8, 15),
-      type: 'birthday',
-      friendId: 'alice123',
-    },
-    {
-      id: uuidv4(),
-      title: "Bob's Graduation",
-      date: new Date(2024, 9, 20),
-      type: 'event',
-      friendId: 'bob456',
-    },
-    // ... other events
-  ];
+  // Получаем текущего пользователя
+  const [user, loadingUser, userError] = useAuthState(auth);
 
-  // State for wishlists
-  const [wishlists, setWishlists] = useState<Wishlist[]>([
-    {
-      id: '1',
-      name: 'Birthday Wishes',
-      date: new Date(2024, 8, 15),
-      emoji: '🎂',
-      eventType: 'birthday',
-    },
-    {
-      id: '2',
-      name: 'New Year Gifts',
-      date: new Date(2024, 0, 1), // January 1st, 2024
-      emoji: '🎉',
-      eventType: 'newyear',
-    },
-    {
-      id: '3',
-      name: 'Wedding Registry',
-      date: new Date(2024, 6, 20),
-      emoji: '💍',
-      eventType: 'wedding',
-    },
-  ]);
+  // Состояние для списков желаний
+  const [wishlists, setWishlists] = useState<Wishlist[]>([]);
+  const [loadingWishlists, setLoadingWishlists] = useState<boolean>(false);
 
-  // Function to delete a wishlist
+  useEffect(() => {
+    if (user) {
+      // Функция для загрузки списков желаний из базы данных
+      const fetchWishlists = async () => {
+        setLoadingWishlists(true);
+        try {
+          const response = await fetch('/api/getUserWishlists', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ user_id: user.uid }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to fetch wishlists');
+          }
+
+          const data = await response.json();
+
+          // Преобразуем полученные данные в нужный формат
+          const wishlistsFromDb: Wishlist[] = data.wishlists.map((item: {
+            id: string;
+            name: string;
+            date: string; // Date comes as a string from the database
+            emoji: string;
+            event_type: string;
+          }) => ({
+            id: item.id,
+            name: item.name,
+            date: new Date(item.date),
+            emoji: item.emoji,
+            eventType: item.event_type,
+          }));
+
+          setWishlists(wishlistsFromDb);
+        } catch (err) {
+          console.error('Error fetching wishlists:', err);
+        } finally {
+          setLoadingWishlists(false);
+        }
+      };
+
+      fetchWishlists();
+    }
+  }, [user]);
+
+  // Обработка состояния загрузки пользователя
+  if (loadingUser) {
+    return <div>Loading...</div>;
+  }
+
+  if (userError) {
+    return <div>Error: {userError.message}</div>;
+  }
+
+  if (!user) {
+    // Если пользователь не авторизован
+    return <div>Please log in to view your wishlists.</div>;
+  }
+
+  // Функция для удаления списка желаний
   const handleDeleteWishlist = (id: string) => {
+    // TODO: Добавить запрос к API для удаления списка желаний из базы данных
+
+    // Обновляем состояние локально
     setWishlists(wishlists.filter((wishlist) => wishlist.id !== id));
-    setSelectedWishlistId(null); // Return to wishlist selection
+    setSelectedWishlistId(null); // Возвращаемся к выбору списка желаний
   };
 
   return (
     <div className="flex h-screen bg-gray-100">
-      {/* Sidebar for larger screens */}
+      {/* Sidebar для больших экранов */}
       <div className="hidden md:block">
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       </div>
 
-      {/* Main content area and bottom navigation */}
+      {/* Основной контент и нижняя навигация */}
       <div className="flex flex-col flex-1 relative">
-        {/* Main content */}
+        {/* Основной контент */}
         <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-20 md:pb-8">
-          {/* Display content based on active tab */}
+          {/* Отображаем контент в зависимости от активной вкладки */}
           {activeTab === 'your-wishlist' && (
             selectedWishlistId === null ? (
-              <WishlistSelectionComponent
-                wishlists={wishlists}
-                setWishlists={setWishlists}
-                onSelectWishlist={setSelectedWishlistId}
-              />
+              loadingWishlists ? (
+                <div>Loading wishlists...</div>
+              ) : (
+                <WishlistSelectionComponent
+                  wishlists={wishlists}
+                  setWishlists={setWishlists}
+                  onSelectWishlist={setSelectedWishlistId}
+                />
+              )
             ) : (
               <YourWishlistComponent
                 wishlistId={selectedWishlistId}
@@ -106,11 +140,11 @@ export function WishlistPageComponent() {
             )
           )}
           {activeTab === 'friends-wishlists' && <FriendsWishlists />}
-          {activeTab === 'calendar-events' && <CalendarComponent events={events} />}
+          {activeTab === 'calendar-events' && <CalendarComponent events={[]} />}
           {activeTab === 'profile' && <ProfileComponent />}
         </main>
 
-        {/* Bottom navigation for mobile devices */}
+        {/* Нижняя навигация для мобильных устройств */}
         <div className="md:hidden fixed bottom-0 left-0 right-0 z-10">
           <BottomNavBar activeTab={activeTab} setActiveTab={setActiveTab} />
         </div>

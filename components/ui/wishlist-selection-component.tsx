@@ -5,8 +5,10 @@ import { useState } from 'react';
 import { PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '@/components/backend/firebase';
 
-// Define the Wishlist type
+// Определяем тип Wishlist
 type Wishlist = {
   id: string;
   name: string;
@@ -27,15 +29,6 @@ export function WishlistSelectionComponent({
   onSelectWishlist,
 }: WishlistSelectionComponentProps) {
   const [isAddWishlistModalOpen, setIsAddWishlistModalOpen] = useState(false);
-
-  // Function to handle adding a new wishlist
-  const handleAddWishlist = (newWishlist: Omit<Wishlist, 'id'>) => {
-    const newWishlistData: Wishlist = {
-      id: (wishlists.length + 1).toString(), // Assign a new ID
-      ...newWishlist,
-    };
-    setWishlists([...wishlists, newWishlistData]); // Add the new wishlist to the list
-  };
 
   return (
     <div>
@@ -63,25 +56,30 @@ export function WishlistSelectionComponent({
       {isAddWishlistModalOpen && (
         <AddWishlistModal
           onClose={() => setIsAddWishlistModalOpen(false)}
-          onAddWishlist={handleAddWishlist}
+          onAddWishlist={(newWishlist) => {
+            // Обновляем состояние wishlists с новым списком желаний
+            setWishlists([...wishlists, newWishlist]);
+          }}
         />
       )}
     </div>
   );
 }
 
-// Define the AddWishlistModal component
+// Определяем компонент AddWishlistModal
 type AddWishlistModalProps = {
   onClose: () => void;
-  onAddWishlist: (wishlist: Omit<Wishlist, 'id'>) => void;
+  onAddWishlist: (wishlist: Wishlist) => void;
 };
 
 function AddWishlistModal({ onClose, onAddWishlist }: AddWishlistModalProps) {
   const [name, setName] = useState('');
   const [eventType, setEventType] = useState('birthday');
   const [date, setDate] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [user] = useAuthState(auth);
 
-  // Map event types to emojis
+  // Карта соответствия типов событий и эмодзи
   const eventEmojis: { [key: string]: string } = {
     birthday: '🎂',
     newyear: '🎉',
@@ -89,19 +87,61 @@ function AddWishlistModal({ onClose, onAddWishlist }: AddWishlistModalProps) {
     graduation: '🎓',
   };
 
-  const handleSubmit = () => {
-    const emoji = eventEmojis[eventType] || '🎁'; // Set emoji based on event type or default
-    onAddWishlist({
+  const handleSubmit = async () => {
+    if (!user) {
+      alert('You need to be logged in to add a wishlist');
+      return;
+    }
+    setIsSubmitting(true);
+
+    const emoji = eventEmojis[eventType] || '🎁'; // Устанавливаем эмодзи на основе типа события
+    const newWishlistData = {
+      user_id: user.uid,
       name,
-      date: new Date(date),
+      date, // Дата в формате строки ISO
       emoji,
-      eventType,
-    });
-    onClose();
-    // Reset form
-    setName('');
-    setDate('');
-    setEventType('birthday');
+      event_type: eventType,
+    };
+
+    try {
+      const response = await fetch('/api/addWishlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newWishlistData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add wishlist');
+      }
+
+      const data = await response.json();
+      const addedWishlist = data.wishlist;
+
+      // Преобразуем строку даты в объект Date
+      addedWishlist.date = new Date(addedWishlist.date);
+
+      // Приводим данные к типу Wishlist
+      const wishlist: Wishlist = {
+        id: addedWishlist.id,
+        name: addedWishlist.name,
+        date: addedWishlist.date,
+        emoji: addedWishlist.emoji,
+        eventType: addedWishlist.event_type,
+      };
+
+      onAddWishlist(wishlist);
+      onClose();
+
+      // Сбрасываем форму
+      setName('');
+      setDate('');
+      setEventType('birthday');
+    } catch (error) {
+      console.error('Error adding wishlist:', error);
+      alert('An error occurred while adding the wishlist');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -117,7 +157,7 @@ function AddWishlistModal({ onClose, onAddWishlist }: AddWishlistModalProps) {
             onChange={(e) => setName(e.target.value)}
           />
         </div>
-        {/* Replace description with date input */}
+        {/* Поле для ввода даты */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700">Event Date</label>
           <input
@@ -127,6 +167,7 @@ function AddWishlistModal({ onClose, onAddWishlist }: AddWishlistModalProps) {
             onChange={(e) => setDate(e.target.value)}
           />
         </div>
+        {/* Выбор типа события */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700">Event Type</label>
           <select
@@ -140,15 +181,17 @@ function AddWishlistModal({ onClose, onAddWishlist }: AddWishlistModalProps) {
             <option value="graduation">Graduation</option>
           </select>
         </div>
-        {/* Display the emoji based on selected event */}
+        {/* Отображение эмодзи на основе выбранного типа события */}
         <div className="mb-4 flex flex-col items-center">
           <span className="text-6xl">{eventEmojis[eventType] || '🎁'}</span>
         </div>
         <div className="flex justify-end space-x-2">
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit}>Add</Button>
+          <Button onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting ? 'Adding...' : 'Add'}
+          </Button>
         </div>
       </div>
     </Modal>
