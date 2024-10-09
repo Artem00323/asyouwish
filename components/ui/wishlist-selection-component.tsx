@@ -10,8 +10,9 @@ import { Modal } from '@/components/ui/modal';
 type Wishlist = {
   id: string;
   name: string;
-  description: string;
-  emoji: string; // Changed from image to emoji
+  date: Date;
+  emoji: string;
+  eventType: string;
 };
 
 type WishlistSelectionComponentProps = {
@@ -50,8 +51,9 @@ export function WishlistSelectionComponent({
             key={wishlist.id}
             id={wishlist.id}
             name={wishlist.name}
-            description={wishlist.description}
-            emoji={wishlist.emoji} // Pass the emoji
+            date={wishlist.date}
+            emoji={wishlist.emoji}
+            eventType={wishlist.eventType}
             onSelect={onSelectWishlist}
           />
         ))}
@@ -76,10 +78,10 @@ type AddWishlistModalProps = {
 
 function AddWishlistModal({ onClose, onAddWishlist }: AddWishlistModalProps) {
   const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
   const [eventType, setEventType] = useState('birthday');
+  const [date, setDate] = useState('');
 
-  // Map event types to emojis with matching keys
+  // Map event types to emojis
   const eventEmojis: { [key: string]: string } = {
     birthday: '🎂',
     newyear: '🎉',
@@ -91,13 +93,14 @@ function AddWishlistModal({ onClose, onAddWishlist }: AddWishlistModalProps) {
     const emoji = eventEmojis[eventType] || '🎁'; // Set emoji based on event type or default
     onAddWishlist({
       name,
-      description,
+      date: new Date(date),
       emoji,
+      eventType,
     });
     onClose();
     // Reset form
     setName('');
-    setDescription('');
+    setDate('');
     setEventType('birthday');
   };
 
@@ -114,13 +117,15 @@ function AddWishlistModal({ onClose, onAddWishlist }: AddWishlistModalProps) {
             onChange={(e) => setName(e.target.value)}
           />
         </div>
+        {/* Replace description with date input */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Description</label>
-          <textarea
+          <label className="block text-sm font-medium text-gray-700">Event Date</label>
+          <input
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          ></textarea>
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
         </div>
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700">Event Type</label>

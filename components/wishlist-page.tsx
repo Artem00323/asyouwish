@@ -18,8 +18,9 @@ export type Tab = 'your-wishlist' | 'friends-wishlists' | 'calendar-events' | 'p
 type Wishlist = {
   id: string;
   name: string;
-  description: string;
-  emoji: string; // Updated to use emoji
+  date: Date;
+  emoji: string;
+  eventType: string;
 };
 
 export function WishlistPageComponent() {
@@ -28,16 +29,46 @@ export function WishlistPageComponent() {
 
   // Sample data for the calendar
   const events: Event[] = [
-    { id: uuidv4(), title: "Alice's Birthday", date: new Date(2024, 8, 15), type: 'birthday', friendId: 'alice123' },
-    { id: uuidv4(), title: "Bob's Graduation", date: new Date(2024, 9, 20), type: 'event', friendId: 'bob456' },
+    {
+      id: uuidv4(),
+      title: "Alice's Birthday",
+      date: new Date(2024, 8, 15),
+      type: 'birthday',
+      friendId: 'alice123',
+    },
+    {
+      id: uuidv4(),
+      title: "Bob's Graduation",
+      date: new Date(2024, 9, 20),
+      type: 'event',
+      friendId: 'bob456',
+    },
     // ... other events
   ];
 
   // State for wishlists
   const [wishlists, setWishlists] = useState<Wishlist[]>([
-    { id: '1', name: 'Birthday Wishes', description: 'Wishlist for my upcoming birthday.', emoji: '🎂' },
-    { id: '2', name: 'New Year Gifts', description: 'Items for the new year.', emoji: '🎉' },
-    { id: '3', name: 'Wedding Registry', description: 'Our wedding gift list.', emoji: '💍' },
+    {
+      id: '1',
+      name: 'Birthday Wishes',
+      date: new Date(2024, 8, 15),
+      emoji: '🎂',
+      eventType: 'birthday',
+    },
+    {
+      id: '2',
+      name: 'New Year Gifts',
+      date: new Date(2024, 0, 1), // January 1st, 2024
+      emoji: '🎉',
+      eventType: 'newyear',
+    },
+    {
+      id: '3',
+      name: 'Wedding Registry',
+      date: new Date(2024, 6, 20),
+      emoji: '💍',
+      eventType: 'wedding',
+    },
   ]);
 
   // Function to delete a wishlist
@@ -85,7 +116,5 @@ export function WishlistPageComponent() {
         </div>
       </div>
     </div>
-
-
   );
 }
