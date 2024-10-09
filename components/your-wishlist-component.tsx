@@ -9,6 +9,8 @@ import { Modal } from '@/components/ui/modal';
 import { AddItemModal } from '@/components/add-item-component'; // Ensure correct path
 import QRCode from 'react-qr-code'; // Import QRCode component
 import Image from 'next/image'; // Import Image component
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '@/components/backend/firebase';
 
 // Define the Wishlist type
 type Wishlist = {
@@ -81,6 +83,9 @@ export function YourWishlistComponent({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
+  // Получаем текущего пользователя
+  const [user] = useAuthState(auth);
+
   // Function to add a new item to the wishlist
   const handleAddItem = (newItem: ItemData) => {
     const newItemData: WishlistItem = {
@@ -106,10 +111,37 @@ export function YourWishlistComponent({
     console.log('Item details clicked for id:', id);
   };
 
-  const handleDeleteWishlist = () => {
-    onDeleteWishlist(wishlistId);
-    setIsDeleteModalOpen(false);
+  // Функция для удаления списка желаний из базы данных
+  const handleDeleteWishlist = async () => {
+    if (!user) return;
+
+    try {
+      // Получаем ID токен текущего пользователя
+      const token = await user.getIdToken();
+
+      const response = await fetch('/api/deleteWishlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`, // Добавляем токен в заголовок
+        },
+        body: JSON.stringify({
+          wishlist_id: wishlistId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete wishlist');
+      }
+
+      // Вызываем функцию обратного вызова после успешного удаления
+      onDeleteWishlist(wishlistId);
+      setIsDeleteModalOpen(false);
+    } catch (err) {
+      console.error('Error deleting wishlist:', err);
+    }
   };
+
 
   const renderImage = (image: string | File) => {
     if (typeof image === 'string') {

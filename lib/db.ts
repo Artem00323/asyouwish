@@ -53,3 +53,11 @@ export const addWishlist = async (wishlistData: Omit<Wishlist, 'id' | 'created_a
 
   return result.rows[0];
 };
+
+// Функция для удаления списка желаний по его ID
+export const deleteWishlistById = async (wishlist_id: string, user_id: string): Promise<void> => {
+  await sql`
+    DELETE FROM wishlists
+    WHERE id = ${wishlist_id} AND user_id = ${user_id};
+  `;
+};
