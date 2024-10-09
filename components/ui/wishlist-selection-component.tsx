@@ -45,7 +45,8 @@ export function WishlistSelectionComponent({
           <PlusCircle className="mr-2 h-4 w-4" /> Add
         </Button>
       </div>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {/* Ensure grid settings match FriendsWishlists */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {wishlists.map((wishlist) => (
           <WishlistSelectButton
             key={wishlist.id}

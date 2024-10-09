@@ -17,10 +17,10 @@ type Friend = {
 };
 
 const friends: Friend[] = [
-  { id: 'alice123', name: 'Alice Johnson', avatar: 'avatars/Alice.jpg', event: { type: 'birthday', date: new Date(2024, 8, 15) } },
-  { id: 'bob456', name: 'Bob Smith', avatar: 'avatars/Bob.jpg', event: { type: 'event', date: new Date(2024, 9, 20), title: "Graduation" } },
-  { id: 'charlie789', name: 'Charlie Brown', avatar: 'avatars/Charlie.jpg', event: { type: 'event', date: new Date(2024, 8, 5), title: "Wedding" } },
-  { id: 'david101', name: 'David Lee', avatar: 'avatars/David.jpg', event: { type: 'birthday', date: new Date(2024, 8, 5) } },
+  { id: 'alice123', name: 'Alice Johnson', avatar: '/avatars/Alice.jpg', event: { type: 'birthday', date: new Date(2024, 8, 15) } },
+  { id: 'bob456', name: 'Bob Smith', avatar: '/avatars/Bob.jpg', event: { type: 'event', date: new Date(2024, 9, 20), title: "Graduation" } },
+  { id: 'charlie789', name: 'Charlie Brown', avatar: '/avatars/Charlie.jpg', event: { type: 'event', date: new Date(2024, 8, 5), title: "Wedding" } },
+  { id: 'david101', name: 'David Lee', avatar: '/avatars/David.jpg', event: { type: 'birthday', date: new Date(2024, 8, 5) } },
 ];
 
 export function FriendsWishlists() {
@@ -28,10 +28,10 @@ export function FriendsWishlists() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-3xl font-bold text-indigo-800 mb-6">Friends&apos; Wishlists</h2>
+      <h2 className="text-3xl font-bold text-indigo-800 mb-6">Friends' Wishlists</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sortedFriends.map((friend) => (
-          <Card key={friend.id} className="hover:shadow-lg transition-shadow duration-300">
+          <Card key={friend.id} className="hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
             <CardHeader className="flex flex-row items-center gap-4">
               <Avatar className="w-12 h-12">
                 <AvatarImage src={friend.avatar} alt={friend.name} />
@@ -52,12 +52,12 @@ export function FriendsWishlists() {
                 </p>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-1 flex flex-col justify-between">
               <p className="text-sm text-gray-600 mb-4">
                 {friend.event.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
               <Link href={`/friend-wishlist/${friend.id}`} passHref>
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full mt-auto">
                   View Wishlist <ChevronRight className="w-4 h-4 ml-2" />
                 </Button>
               </Link>

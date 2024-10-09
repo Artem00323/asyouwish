@@ -21,7 +21,7 @@ export function WishlistSelectButton({
   onSelect,
 }: WishlistSelectButtonProps) {
   return (
-    <Card key={id} className="hover:shadow-lg transition-shadow duration-300">
+    <Card key={id} className="hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
       <CardHeader className="flex flex-row items-center gap-4">
         {/* Display the emoji instead of the avatar */}
         <div className="w-12 h-12 flex items-center justify-center text-4xl">
@@ -42,12 +42,12 @@ export function WishlistSelectButton({
           </p>
         </div>
       </CardHeader>
-      <CardContent>
-        {/* Display the date before the button */}
+      <CardContent className="flex-1 flex flex-col justify-between">
+        {/* Display the date */}
         <p className="text-sm text-gray-600 mb-4">
           {date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
         </p>
-        <Button variant="outline" className="w-full" onClick={() => onSelect(id)}>
+        <Button variant="outline" className="w-full mt-auto" onClick={() => onSelect(id)}>
           View Wishlist <ChevronRight className="w-4 h-4 ml-2" />
         </Button>
       </CardContent>
