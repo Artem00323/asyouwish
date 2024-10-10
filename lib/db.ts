@@ -21,6 +21,19 @@ export interface Wishlist {
   updated_at?: string;
 }
 
+export interface Item {
+  id: number;
+  wishlist_id: string;
+  name: string;
+  image: string;
+  price: number;
+  contributed: number;
+  description: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+
 export const ensureUserInDatabase = async (userData: User) => {
   const { user_id, name, email, password_hash } = userData;
 
@@ -59,5 +72,37 @@ export const deleteWishlistById = async (wishlist_id: string, user_id: string): 
   await sql`
     DELETE FROM wishlists
     WHERE id = ${wishlist_id} AND user_id = ${user_id};
+  `;
+};
+
+// Function to get items for a wishlist
+export const getItemsForWishlist = async (wishlist_id: string): Promise<Item[]> => {
+  const { rows } = await sql<Item>`
+    SELECT * FROM items WHERE wishlist_id = ${wishlist_id};
+  `;
+  return rows;
+};
+
+// Function to add a new item
+export const addItemToWishlist = async (
+  itemData: Omit<Item, 'id' | 'created_at' | 'updated_at' | 'contributed'>
+): Promise<Item> => {
+  const { wishlist_id, name, image, price, description } = itemData;
+  const { rows } = await sql<Item>`
+    INSERT INTO items (wishlist_id, name, image, price, description, contributed, created_at, updated_at)
+    VALUES (${wishlist_id}, ${name}, ${image}, ${price}, ${description}, 0, NOW(), NOW())
+    RETURNING *;
+  `;
+  return rows[0];
+};
+
+// Function to delete an item
+export const deleteItemById = async (item_id: number, user_id: string): Promise<void> => {
+  await sql`
+    DELETE FROM items
+    USING wishlists
+    WHERE items.id = ${item_id}
+    AND items.wishlist_id = wishlists.id
+    AND wishlists.user_id = ${user_id};
   `;
 };
