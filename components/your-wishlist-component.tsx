@@ -1,20 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PlusCircle, Share2, Trash2, Info, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Modal } from '@/components/ui/modal';
-import { AddItemModal } from '@/components/add-item-component'; // Ensure correct path
-import QRCode from 'react-qr-code'; // Import QRCode component
-import Image from 'next/image'; // Import Image component
+import { AddItemModal } from '@/components/add-item-component';
+import QRCode from 'react-qr-code';
+import Image from 'next/image';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/components/backend/firebase';
+import { Item } from '@/lib/db';
 
 // Define the Wishlist type
 type Wishlist = {
-  id: string;
+  id: string; // UUID
   name: string;
   date: Date;
   emoji: string;
@@ -29,14 +30,10 @@ interface ItemData {
   description: string;
 }
 
-interface WishlistItem extends Omit<ItemData, 'image'> {
-  id: string;
-  contributed: number;
-  image: string | File; // Allow image to be a string or File
-}
+type WishlistItem = Item;
 
 type YourWishlistComponentProps = {
-  wishlistId: string;
+  wishlistId: string; // UUID
   wishlists: Wishlist[];
   onDeleteWishlist: (id: string) => void;
   onBack: () => void;
@@ -52,78 +49,162 @@ export function YourWishlistComponent({
   const wishlistName = wishlist ? wishlist.name : 'Your Wishlist';
   const wishlistEmoji = wishlist ? wishlist.emoji : '🎁';
 
-  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([
-    {
-      id: '1',
-      name: 'Smartphone',
-      image: '/images/iphone.jpg',
-      price: 999,
-      contributed: 250,
-      description: 'Smartphone',
-    },
-    {
-      id: '2',
-      name: 'Laptop',
-      image: '/images/macbook.jpg',
-      price: 1499,
-      contributed: 750,
-      description: 'Laptop',
-    },
-    {
-      id: '3',
-      name: 'Headphones',
-      image: '/images/airpods.jpg',
-      price: 299,
-      contributed: 100,
-      description: 'Headphones',
-    },
-  ]);
-
+  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
+  const [isLoadingItems, setIsLoadingItems] = useState<boolean>(false);
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
-  // Получаем текущего пользователя
+  // Get current user
   const [user] = useAuthState(auth);
 
-  // Function to add a new item to the wishlist
-  const handleAddItem = (newItem: ItemData) => {
-    const newItemData: WishlistItem = {
-      id: (wishlistItems.length + 1).toString(), // Assign a new ID
-      name: newItem.name,
-      image: newItem.image,
-      price: newItem.price,
-      contributed: 0, // Initialize contributed value
-      description: newItem.description,
+  // Fetch items when the component mounts or wishlistId changes
+  useEffect(() => {
+    const fetchItems = async () => {
+      setIsLoadingItems(true);
+      try {
+        const response = await fetch('/api/getWishlistItems', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ wishlist_id: wishlistId }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch items');
+        }
+
+        const data: { items: Item[] } = await response.json();
+
+        const itemsFromDb: WishlistItem[] = data.items.map((item) => ({
+          id: item.id,
+          wishlist_id: item.wishlist_id,
+          name: item.name,
+          image: item.image,
+          price: item.price,
+          contributed: item.contributed,
+          description: item.description,
+        }));
+
+        setWishlistItems(itemsFromDb);
+      } catch (err) {
+        console.error('Error fetching items:', err);
+      } finally {
+        setIsLoadingItems(false);
+      }
     };
-    setWishlistItems([...wishlistItems, newItemData]); // Add the new item to the list
+
+    fetchItems();
+  }, [wishlistId]);
+
+  // Function to add a new item to the wishlist
+  const handleAddItem = async (newItem: ItemData) => {
+    if (!user) return;
+
+    try {
+      const token = await user.getIdToken();
+
+      // Handle image upload separately if image is a File
+      let imageUrl = '';
+      if (typeof newItem.image === 'string') {
+        imageUrl = newItem.image;
+      } else {
+        // For simplicity, we'll convert the image file to a base64 string
+        const reader = new FileReader();
+        reader.readAsDataURL(newItem.image);
+        await new Promise((resolve) => {
+          reader.onload = () => {
+            imageUrl = reader.result as string;
+            resolve(null);
+          };
+        });
+      }
+
+      const response = await fetch('/api/addItem', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          wishlist_id: wishlistId,
+          name: newItem.name,
+          image: imageUrl,
+          price: newItem.price,
+          description: newItem.description,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add item');
+      }
+
+      const data = await response.json();
+
+      const addedItem: WishlistItem = {
+        id: data.item.id,
+        wishlist_id: data.item.wishlist_id,
+        name: data.item.name,
+        image: data.item.image,
+        price: parseFloat(data.item.price),
+        contributed: parseFloat(data.item.contributed),
+        description: data.item.description,
+      };
+
+      setWishlistItems([...wishlistItems, addedItem]);
+    } catch (err) {
+      console.error('Error adding item:', err);
+    }
+  };
+
+  const handleDeleteItem = async (id: number) => {
+    if (!user) return;
+
+    try {
+      const token = await user.getIdToken();
+
+      const response = await fetch('/api/deleteItem', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          item_id: id,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete item');
+      }
+
+      setWishlistItems(wishlistItems.filter((item) => item.id !== id));
+    } catch (err) {
+      console.error('Error deleting item:', err);
+    }
   };
 
   const handleShareWishlist = () => {
     setIsShareModalOpen(true);
   };
 
-  const handleDeleteItem = (id: string) => {
-    setWishlistItems(wishlistItems.filter((item) => item.id !== id));
-  };
-
-  const handleItemDetails = (id: string) => {
+  const handleItemDetails = (id: number) => {
     console.log('Item details clicked for id:', id);
   };
 
-  // Функция для удаления списка желаний из базы данных
+  // Function to delete the wishlist
   const handleDeleteWishlist = async () => {
     if (!user) return;
 
     try {
-      // Получаем ID токен текущего пользователя
       const token = await user.getIdToken();
 
       const response = await fetch('/api/deleteWishlist', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`, // Добавляем токен в заголовок
+          Authorization: `Bearer ${token}`, // Add token to header
         },
         body: JSON.stringify({
           wishlist_id: wishlistId,
@@ -134,7 +215,7 @@ export function YourWishlistComponent({
         throw new Error('Failed to delete wishlist');
       }
 
-      // Вызываем функцию обратного вызова после успешного удаления
+      // Call the callback to remove the wishlist from parent component
       onDeleteWishlist(wishlistId);
       setIsDeleteModalOpen(false);
     } catch (err) {
@@ -142,12 +223,8 @@ export function YourWishlistComponent({
     }
   };
 
-
-  const renderImage = (image: string | File) => {
-    if (typeof image === 'string') {
-      return image;
-    }
-    return URL.createObjectURL(image); // Convert File to a URL
+  const renderImage = (image: string) => {
+    return image;
   };
 
   // Generate the link for the wishlist
@@ -180,14 +257,16 @@ export function YourWishlistComponent({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3 md:gap-4">
-        {wishlistItems.map((item) => (
-          <Card
-            key={item.id}
-            className="overflow-hidden hover:shadow-lg transition-shadow duration-300"
-          >
-            <div className="relative w-full h-40 md:h-48">
-              {typeof item.image === 'string' ? (
+      {isLoadingItems ? (
+        <div>Loading items...</div>
+      ) : (
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3 md:gap-4">
+          {wishlistItems.map((item) => (
+            <Card
+              key={item.id}
+              className="overflow-hidden hover:shadow-lg transition-shadow duration-300"
+            >
+              <div className="relative w-full h-40 md:h-48">
                 <Image
                   src={renderImage(item.image)}
                   alt={item.name}
@@ -195,35 +274,31 @@ export function YourWishlistComponent({
                   objectFit="cover"
                   className="rounded-t-md"
                 />
-              ) : (
-                // For dynamic images (File objects), we need to use <img> tag
-                <img
-                  src={renderImage(item.image)}
-                  alt={item.name}
-                  className="w-full h-full object-cover rounded-t-md"
+              </div>
+              <CardContent className="p-2 md:p-4">
+                <h3 className="text-lg md:text-xl font-semibold mb-1 md:mb-2">{item.name}</h3>
+                <Progress
+                  value={(item.contributed / item.price) * 100}
+                  className="mb-1 md:mb-2"
                 />
-              )}
-            </div>
-            <CardContent className="p-2 md:p-4">
-              <h3 className="text-lg md:text-xl font-semibold mb-1 md:mb-2">{item.name}</h3>
-              <Progress value={(item.contributed / item.price) * 100} className="mb-1 md:mb-2" />
-              <p className="text-xs md:text-sm text-gray-600">
-                {item.contributed}₽ raised of {item.price}₽
-              </p>
-            </CardContent>
-            <CardFooter className="bg-gray-50 p-2 md:p-4 flex justify-between">
-              <Button variant="destructive" size="sm" onClick={() => handleDeleteItem(item.id)}>
-                <Trash2 className="mr-1 md:mr-2 h-4 w-4" />{' '}
-                <span className="hidden md:inline">Delete</span>
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => handleItemDetails(item.id)}>
-                <Info className="mr-1 md:mr-2 h-4 w-4" />{' '}
-                <span className="hidden md:inline">Details</span>
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+                <p className="text-xs md:text-sm text-gray-600">
+                  {item.contributed}₽ raised of {item.price}₽
+                </p>
+              </CardContent>
+              <CardFooter className="bg-gray-50 p-2 md:p-4 flex justify-between">
+                <Button variant="destructive" size="sm" onClick={() => handleDeleteItem(item.id)}>
+                  <Trash2 className="mr-1 md:mr-2 h-4 w-4" />{' '}
+                  <span className="hidden md:inline">Delete</span>
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handleItemDetails(item.id)}>
+                  <Info className="mr-1 md:mr-2 h-4 w-4" />{' '}
+                  <span className="hidden md:inline">Details</span>
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {/* "Delete Wishlist" button at the bottom right */}
       <div className="flex justify-end mt-6">
