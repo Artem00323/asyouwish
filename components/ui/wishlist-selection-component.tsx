@@ -1,6 +1,6 @@
 'use client';
 
-import { WishlistSelectButton } from '@/components/ui/wishlist-select-button';
+import { EventCard } from '@/components/ui/EventCard';
 import { useState } from 'react';
 import { PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -38,9 +38,9 @@ export function WishlistSelectionComponent({
           <PlusCircle className="mr-2 h-4 w-4" /> Add
         </Button>
       </div>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {wishlists.map((wishlist) => (
-          <WishlistSelectButton
+          <EventCard
             key={wishlist.id}
             id={wishlist.id}
             name={wishlist.name}
