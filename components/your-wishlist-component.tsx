@@ -12,15 +12,7 @@ import Image from 'next/image';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/components/backend/firebase';
 import { Item } from '@/lib/db';
-
-// Define the Wishlist type
-type Wishlist = {
-  id: string; // UUID
-  name: string;
-  date: string;
-  emoji: string;
-  event_type: string;
-};
+import { Wishlist } from './ui/types';
 
 interface ItemData {
   name: string;

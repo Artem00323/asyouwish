@@ -19,3 +19,11 @@ export type WishlistItem = {
     price: number;
     contributed: number;
 };
+
+export type Wishlist = {
+    id: string;
+    name: string;
+    date: Date;
+    emoji: string;
+    eventType: string; // Change this to match your existing naming convention
+};
