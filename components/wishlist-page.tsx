@@ -11,20 +11,12 @@ import { FriendsWishlists } from '@/components/friends-wishlist-component';
 import { CalendarComponent } from '@/components/calendar-component';
 import { ProfileComponent } from '@/components/profile-component';
 import { WishlistSelectionComponent } from '@/components/ui/wishlist-selection-component';
-
+import { Wishlist } from './ui/types';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/components/backend/firebase';
 
 // Определяем типы
 export type Tab = 'your-wishlist' | 'friends-wishlists' | 'calendar-events' | 'profile';
-
-type Wishlist = {
-  id: string;
-  name: string;
-  date: Date;
-  emoji: string;
-  eventType: string;
-};
 
 export function WishlistPageComponent() {
   const [activeTab, setActiveTab] = useState<Tab>('your-wishlist');
