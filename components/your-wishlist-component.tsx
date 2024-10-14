@@ -17,12 +17,11 @@ import { Item } from '@/lib/db';
 type Wishlist = {
   id: string; // UUID
   name: string;
-  date: Date;
+  date: string;
   emoji: string;
-  eventType: string;
+  event_type: string;
 };
 
-// Update ItemData interface to match AddItemModal structure
 interface ItemData {
   name: string;
   image: string | File; // Accept both string and File for the image
@@ -227,8 +226,14 @@ export function YourWishlistComponent({
     return image;
   };
 
-  // Generate the link for the wishlist
-  const wishlistLink = `https://example.com/wishlist/${wishlistId}`;
+  // State to hold the wishlist link
+  const [wishlistLink, setWishlistLink] = useState('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setWishlistLink(`${window.location.origin}/wishlist/${wishlistId}`);
+    }
+  }, [wishlistId]);
 
   return (
     <>
@@ -286,7 +291,11 @@ export function YourWishlistComponent({
                 </p>
               </CardContent>
               <CardFooter className="bg-gray-50 p-2 md:p-4 flex justify-between">
-                <Button variant="destructive" size="sm" onClick={() => handleDeleteItem(item.id)}>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleDeleteItem(item.id)}
+                >
                   <Trash2 className="mr-1 md:mr-2 h-4 w-4" />{' '}
                   <span className="hidden md:inline">Delete</span>
                 </Button>
@@ -321,7 +330,7 @@ export function YourWishlistComponent({
         <Modal onClose={() => setIsShareModalOpen(false)}>
           <div className="p-4 text-black flex flex-col items-center">
             <h2 className="text-lg font-semibold mb-4">Share Wishlist</h2>
-            <QRCode value={wishlistLink} size={200} />
+            {wishlistLink && <QRCode value={wishlistLink} size={200} />}
             <div className="mt-4 w-full">
               <p className="text-sm mb-2">Share this link:</p>
               <div className="flex items-center">
