@@ -33,6 +33,14 @@ export interface Item {
   updated_at?: string;
 }
 
+export interface Friendship {
+  id: string;
+  user_id: string;
+  friend_id: string;
+  status: string;
+  created_at?: string;
+  updated_at?: string;
+}
 
 export const ensureUserInDatabase = async (userData: User) => {
   const { user_id, name, email, password_hash } = userData;
@@ -120,4 +128,77 @@ export const getItemsByWishlistId = async (wishlist_id: string): Promise<Item[]>
     SELECT * FROM items WHERE wishlist_id = ${wishlist_id};
   `;
   return rows;
+};
+
+// Function to get a user by user_id
+export const getUserById = async (user_id: string): Promise<User | null> => {
+  const { rows } = await sql<User>`
+    SELECT * FROM users WHERE user_id = ${user_id};
+  `;
+  return rows[0] || null;
+};
+
+// Function to add a friendship
+export const addFriendship = async (
+  user_id: string,
+  friend_id: string,
+  status: string = 'pending'
+): Promise<Friendship> => {
+  // Check if friendship already exists
+  const { rows: existingFriendships } = await sql<Friendship>`
+    SELECT * FROM friendships
+    WHERE 
+      (user_id = ${user_id} AND friend_id = ${friend_id})
+      OR
+      (user_id = ${friend_id} AND friend_id = ${user_id});
+  `;
+
+  if (existingFriendships.length > 0) {
+    throw new Error('Friendship already exists');
+  }
+
+  // Insert new friendship
+  const { rows } = await sql<Friendship>`
+    INSERT INTO friendships (user_id, friend_id, status, created_at, updated_at)
+    VALUES (${user_id}, ${friend_id}, ${status}, NOW(), NOW())
+    RETURNING *;
+  `;
+  return rows[0];
+};
+
+// Function to get friends for a user
+export const getFriendsForUser = async (user_id: string): Promise<User[]> => {
+  const { rows } = await sql<User>`
+    SELECT u.*
+    FROM users u
+    JOIN friendships f ON
+      (f.user_id = ${user_id} AND f.friend_id = u.user_id)
+      OR (f.friend_id = ${user_id} AND f.user_id = u.user_id)
+    WHERE f.status = 'accepted';
+  `;
+  return rows;
+};
+
+// Function to get pending friend requests for a user
+export const getPendingFriendRequests = async (user_id: string): Promise<User[]> => {
+  const { rows } = await sql<User>`
+    SELECT u.*
+    FROM users u
+    JOIN friendships f ON f.user_id = u.user_id
+    WHERE f.friend_id = ${user_id} AND f.status = 'pending';
+  `;
+  return rows;
+};
+
+// Function to update friendship status
+export const updateFriendshipStatus = async (
+  user_id: string,
+  friend_id: string,
+  status: 'accepted' | 'rejected'
+): Promise<void> => {
+  await sql`
+    UPDATE friendships
+    SET status = ${status}, updated_at = NOW()
+    WHERE user_id = ${friend_id} AND friend_id = ${user_id};
+  `;
 };

@@ -1,3 +1,5 @@
+// components/ui/button.tsx
+
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
@@ -15,6 +17,7 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        success: "bg-green-500 text-white shadow-sm hover:bg-green-400", // Add this line for success variant
       },
       size: {
         default: "h-9 px-4 py-2",
@@ -29,6 +32,7 @@ const buttonVariants = cva(
     },
   }
 );
+
 
 // Define the ButtonProps interface with proper typing
 export interface ButtonProps

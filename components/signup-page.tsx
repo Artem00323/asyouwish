@@ -24,7 +24,7 @@ import {
 import { auth, googleProvider, getFriendlyErrorMessage } from '@/components/backend/firebase';
 import { FirebaseError } from 'firebase/app';
 
-export default function SignupPageComponent() { // Default export
+export default function SignupPageComponent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState(''); // Even though we don't store it
   const [name, setName] = useState('');
@@ -40,7 +40,7 @@ export default function SignupPageComponent() { // Default export
     password_hash: string;
   }) => {
     try {
-      const response = await fetch('/api/ensureUser', { // Consistent endpoint
+      const response = await fetch('/api/ensureUser', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -83,6 +83,9 @@ export default function SignupPageComponent() { // Default export
         password_hash: '', // Not storing passwords
       });
 
+      // Store user_id in localStorage
+      localStorage.setItem('user_id', user.uid);
+
       // Redirect to wishlist or desired page
       router.push('/wishlist');
     } catch (err: unknown) {
@@ -123,6 +126,9 @@ export default function SignupPageComponent() { // Default export
         email: user.email || '',
         password_hash: '', // Not storing passwords
       });
+
+      // Store user_id in localStorage
+      localStorage.setItem('user_id', user.uid);
 
       // Redirect to wishlist or desired page
       router.push('/wishlist');
@@ -185,7 +191,7 @@ export default function SignupPageComponent() { // Default export
                 onChange={(e) => setName(e.target.value)}
                 placeholder="John Doe"
                 required
-                disabled={isLoading} // Disable input while loading
+                disabled={isLoading}
               />
             </div>
             <div className="space-y-2">
@@ -197,7 +203,7 @@ export default function SignupPageComponent() { // Default export
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="m@example.com"
                 required
-                disabled={isLoading} // Disable input while loading
+                disabled={isLoading}
               />
             </div>
             <div className="space-y-2">
@@ -208,7 +214,7 @@ export default function SignupPageComponent() { // Default export
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                disabled={isLoading} // Disable input while loading
+                disabled={isLoading}
               />
             </div>
             <Button className="w-full" type="submit" disabled={isLoading}>
@@ -222,10 +228,10 @@ export default function SignupPageComponent() { // Default export
                 <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
               </div>
             </div>
-            <Button 
-              variant="outline" 
-              className="w-full" 
-              onClick={handleGoogleSignup} 
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={handleGoogleSignup}
               disabled={isLoading}
             >
               <Mail className="mr-2 h-4 w-4" /> {isLoading ? "Signing Up..." : "Sign up with Google"}
@@ -233,7 +239,6 @@ export default function SignupPageComponent() { // Default export
           </CardContent>
         </form>
 
-        {/* End of the form */}
         <CardFooter>
           <div className="text-sm text-muted-foreground text-center w-full">
             Already have an account?{" "}

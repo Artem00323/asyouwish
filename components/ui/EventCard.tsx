@@ -69,7 +69,7 @@ export function EventCard({
         ) : (
           <Link href={link || '#'} passHref>
             <Button variant="outline" className="w-full">
-              View Wishlist <ChevronRight className="w-4 h-4 ml-2" />
+              View Wishlists <ChevronRight className="w-4 h-4 ml-2" />
             </Button>
           </Link>
         )}
