@@ -106,3 +106,18 @@ export const deleteItemById = async (item_id: number, user_id: string): Promise<
     AND wishlists.user_id = ${user_id};
   `;
 };
+
+export const getWishlistById = async (wishlist_id: string): Promise<Wishlist | null> => {
+  const { rows } = await sql<Wishlist>`
+    SELECT * FROM wishlists WHERE id = ${wishlist_id};
+  `;
+  return rows[0] || null;
+};
+
+// Function to get items by wishlist ID
+export const getItemsByWishlistId = async (wishlist_id: string): Promise<Item[]> => {
+  const { rows } = await sql<Item>`
+    SELECT * FROM items WHERE wishlist_id = ${wishlist_id};
+  `;
+  return rows;
+};
