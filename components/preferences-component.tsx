@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { useTheme } from '@/components/theme-provider';
 
 interface PreferencesComponentProps {
   onSave: (preferences: any) => void;
@@ -11,12 +12,12 @@ interface PreferencesComponentProps {
 }
 
 export function PreferencesComponent({ onSave, onCancel }: PreferencesComponentProps) {
-  const [darkMode, setDarkMode] = useState(false);
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [language, setLanguage] = useState('en');
+  const { theme, toggleTheme } = useTheme();
+  const [emailNotifications, setEmailNotifications] = React.useState(true);
+  const [language, setLanguage] = React.useState('en');
 
   const handleSave = () => {
-    onSave({ darkMode, emailNotifications, language });
+    onSave({ darkMode: theme === 'dark', emailNotifications, language });
   };
 
   return (
@@ -29,8 +30,8 @@ export function PreferencesComponent({ onSave, onCancel }: PreferencesComponentP
           <Label htmlFor="dark-mode">Dark Mode</Label>
           <Switch
             id="dark-mode"
-            checked={darkMode}
-            onCheckedChange={setDarkMode}
+            checked={theme === 'dark'}
+            onCheckedChange={toggleTheme}
           />
         </div>
         <div className="flex items-center justify-between">
@@ -62,4 +63,3 @@ export function PreferencesComponent({ onSave, onCancel }: PreferencesComponentP
     </Card>
   );
 }
-
