@@ -38,7 +38,7 @@ export function WishlistSelectionComponent({
           <PlusCircle className="mr-2 h-4 w-4" /> Add
         </Button>
       </div>
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-6 lg:grid-cols-3">
         {wishlists.map((wishlist) => (
           <EventCard
             key={wishlist.id}
@@ -57,7 +57,7 @@ export function WishlistSelectionComponent({
         <AddWishlistModal
           onClose={() => setIsAddWishlistModalOpen(false)}
           onAddWishlist={(newWishlist) => {
-            // Обновляем состояние wishlists с новым списком желаний
+            // Update wishlists with the new wishlist
             setWishlists([...wishlists, newWishlist]);
           }}
         />
@@ -65,6 +65,8 @@ export function WishlistSelectionComponent({
     </div>
   );
 }
+
+
 
 // Определяем компонент AddWishlistModal
 type AddWishlistModalProps = {

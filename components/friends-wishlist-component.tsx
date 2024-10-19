@@ -47,7 +47,6 @@ export function FriendsWishlists() {
           },
         });
 
-
         setPendingRequests(pendingResponse.data.pendingRequests);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -138,27 +137,25 @@ export function FriendsWishlists() {
 
       {/* Pending Friend Requests */}
       {pendingRequests.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="mb-6">
-            <h3 className="text-xl font-semibold mb-4 text-black">Pending Friend Requests</h3>
-            <div className="space-y-4">
+        <div className="mb-6">
+          <h3 className="text-xl font-semibold mb-4 text-black">Pending Friend Requests</h3>
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
             {pendingRequests.map((request) => (
-                <PendingRequestCard
-                  key={request.user_id}
-                  id={request.user_id}
-                  name={request.name}
-                  avatar={request.avatar}
-                  onAccept={() => handleRespondToRequest(request.user_id, 'accept')}
-                  onReject={() => handleRespondToRequest(request.user_id, 'reject')}
-                />
-              ))}
-            </div>
+              <PendingRequestCard
+                key={request.user_id}
+                id={request.user_id}
+                name={request.name}
+                avatar={request.avatar}
+                onAccept={() => handleRespondToRequest(request.user_id, 'accept')}
+                onReject={() => handleRespondToRequest(request.user_id, 'reject')}
+              />
+            ))}
           </div>
         </div>
       )}
 
       {/* Friends List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
         {friends.map((friend) => (
           <EventCard
             key={friend.user_id}
@@ -168,6 +165,7 @@ export function FriendsWishlists() {
             avatar={friend.avatar || 'avatars/Me.jpg'}
             eventType="Wishlist"
             link={`/friend-wishlists/${friend.user_id}`}
+            hideEventType={true} // Hide the explanatory text
           />
         ))}
       </div>
