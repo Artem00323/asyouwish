@@ -213,7 +213,7 @@ export function ProfileComponent() {
                     {activity.type === 'item_added' && <PlusCircle className="text-primary flex-shrink-0 w-4 h-4" />}
                     {activity.type === 'friendship_created' && <UserPlus className="text-primary flex-shrink-0 w-4 h-4" />}
                     <span className="truncate flex-grow text-sm">
-                      {activity.title.length > 10 ? `${activity.title.substring(0, 10)}...` : activity.title}
+                      {activity.title.length > 20 ? `${activity.title.substring(0, 20)}...` : activity.title}
                     </span>
                     <span className="text-xs text-muted-foreground whitespace-nowrap">
                       {formatDate(new Date(activity.date))}
