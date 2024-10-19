@@ -6,8 +6,8 @@ export interface User {
   name: string;
   email: string;
   password_hash: string;
-  created_at?: string;
-  updated_at?: string;
+  join_date: string;
+  updated_at: string;
 }
 
 export interface Wishlist {
@@ -201,4 +201,90 @@ export const updateFriendshipStatus = async (
     SET status = ${status}, updated_at = NOW()
     WHERE user_id = ${friend_id} AND friend_id = ${user_id};
   `;
+};
+
+// Add this interface definition
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  joinDate: string;
+  wishlistCount: number;
+  friendsCount: number;
+  event: EventType | null;
+  recentActivity: Array<{
+    type: string;
+    title: string;
+    date: string;
+  }>;
+}
+
+// Also add this interface if not already defined
+export interface EventType {
+  title: string;
+  date: string;
+  type: string;
+}
+
+export const getUserProfile = async (user_id: string): Promise<UserProfile> => {
+  const { rows: [user] } = await sql<User>`
+    SELECT user_id, name, email, created_at as join_date
+    FROM users
+    WHERE user_id = ${user_id};
+  `;
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  const { rows: wishlists } = await sql<{ count: number }>`
+    SELECT COUNT(*) as count
+    FROM wishlists
+    WHERE user_id = ${user_id};
+  `;
+
+  const { rows: friends } = await sql<{ count: number }>`
+    SELECT COUNT(*) as count
+    FROM friendships
+    WHERE (user_id = ${user_id} OR friend_id = ${user_id}) AND status = 'accepted';
+  `;
+
+  const { rows: [latestEvent] } = await sql<EventType>`
+    SELECT name as title, date, event_type as type
+    FROM wishlists
+    WHERE user_id = ${user_id}
+    ORDER BY date DESC
+    LIMIT 1;
+  `;
+
+  const { rows: recentActivity } = await sql<{ type: string; title: string; date: string }>`
+    (SELECT 'wishlist_created' as type, name as title, created_at as date
+     FROM wishlists
+     WHERE user_id = ${user_id})
+    UNION ALL
+    (SELECT 'item_added' as type, items.name as title, items.created_at as date
+     FROM items
+     JOIN wishlists ON items.wishlist_id = wishlists.id
+     WHERE wishlists.user_id = ${user_id})
+    UNION ALL
+    (SELECT 'friendship_created' as type, users.name as title, friendships.created_at as date
+     FROM friendships
+     JOIN users ON (friendships.friend_id = users.user_id)
+     WHERE friendships.user_id = ${user_id} AND friendships.status = 'accepted')
+    ORDER BY date DESC
+    LIMIT 5;
+  `;
+
+  return {
+    id: user.user_id,
+    name: user.name,
+    email: user.email,
+    avatar: `/avatars/${user.name.split(' ')[0]}.jpg`,
+    joinDate: user.join_date,
+    wishlistCount: wishlists[0].count,
+    friendsCount: friends[0].count,
+    event: latestEvent || null,
+    recentActivity: recentActivity,
+  };
 };

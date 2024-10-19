@@ -1,12 +1,13 @@
 // components/ui/profile-component.tsx
 'use client';
 
-import React from 'react';
-import { useRouter } from 'next/navigation'; // Updated import
-import { User, Mail, Gift, Calendar, Settings, LogOut } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { User, Mail, Gift, Calendar, Settings, LogOut, PlusCircle, UserPlus } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { format } from 'date-fns';
 
 interface EventType {
   type: string;
@@ -19,41 +20,73 @@ interface UserProfile {
   name: string;
   email: string;
   avatar: string;
-  joinDate: Date;
+  joinDate: string;
   wishlistCount: number;
   friendsCount: number;
-  event: EventType;
+  event: EventType | null;
+  recentActivity: Array<{
+    type: string;
+    title: string;
+    date: string;
+  }>;
 }
 
 export function ProfileComponent() {
-  const router = useRouter(); // Initialize the router
+  const router = useRouter();
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Example user data. Replace with real data fetching logic.
-  const user: UserProfile = {
-    id: 'bob456',
-    name: 'Bob Smith',
-    email: 'bob.smith@example.com',
-    avatar: '/avatars/Bob.jpg', // Corrected path
-    joinDate: new Date('2023-01-15'),
-    wishlistCount: 3,
-    friendsCount: 42,
-    event: {
-      type: 'event',
-      date: new Date(2024, 9, 20), // October is month index 9
-      title: "Graduation",
-    },
+  const formatDate = (dateInput: string | Date) => {
+    const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+    if (isNaN(date.getTime())) {
+      return 'Unknown date';
+    }
+    return format(date, 'PP'); // This will format the date as "Oct 10, 2024"
   };
 
-  // Handler for logging out
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const response = await fetch('/api/getUserProfile', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ user_id: localStorage.getItem('user_id') }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch user profile');
+        }
+
+        const data = await response.json();
+        setUser(data.userProfile);
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+
   const handleLogout = () => {
     // Implement your logout logic here.
     // This could involve clearing tokens from localStorage, cookies, or calling an API endpoint.
-    // Example for clearing localStorage:
-    // localStorage.removeItem('authToken');
+    localStorage.removeItem('user_id');
     
     // After logout logic, redirect to the modern landing page
     router.push('/modern-landing-page');
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return <div>Error loading user profile</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -75,7 +108,7 @@ export function ProfileComponent() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div className="flex items-center gap-2">
               <Calendar className="text-indigo-600" />
-              <span>Joined {user.joinDate.toLocaleDateString()}</span>
+              <span>Joined {formatDate(user.joinDate)}</span>
             </div>
             <div className="flex items-center gap-2">
               <Gift className="text-indigo-600" />
@@ -85,6 +118,12 @@ export function ProfileComponent() {
               <User className="text-indigo-600" />
               <span>{user.friendsCount} Friends</span>
             </div>
+            {user.event && (
+              <div className="flex items-center gap-2">
+                <Calendar className="text-indigo-600" />
+                <span>Next event: {user.event.title} on {formatDate(user.event.date)}</span>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -107,7 +146,7 @@ export function ProfileComponent() {
           <Button
             variant="outline"
             className="w-full justify-start text-red-600 hover:bg-gray-200 hover:text-red-700 transition-colors duration-200"
-            onClick={handleLogout} // Attach the logout handler
+            onClick={handleLogout}
           >
             <LogOut className="mr-2 h-4 w-4" /> Log Out
           </Button>
@@ -121,18 +160,17 @@ export function ProfileComponent() {
         </CardHeader>
         <CardContent>
           <ul className="space-y-4">
-            <li className="flex items-center gap-2">
-              <Gift className="text-indigo-600" />
-              <span>Added new item to Summer Wishlist</span>
-            </li>
-            <li className="flex items-center gap-2">
-              <User className="text-indigo-600" />
-              <span>Became friends with Jane Smith</span>
-            </li>
-            <li className="flex items-center gap-2">
-              <Calendar className="text-indigo-600" />
-              <span>Created Birthday Wishlist</span>
-            </li>
+            {user.recentActivity.map((activity, index) => (
+              <li key={index} className="flex items-center gap-2">
+                {activity.type === 'wishlist_created' && <Gift className="text-indigo-600" />}
+                {activity.type === 'item_added' && <PlusCircle className="text-indigo-600" />}
+                {activity.type === 'friendship_created' && <UserPlus className="text-indigo-600" />}
+                <span>{activity.title}</span>
+                <span className="text-sm text-gray-500">
+                  {formatDate(new Date(activity.date))}
+                </span>
+              </li>
+            ))}
           </ul>
         </CardContent>
       </Card>
