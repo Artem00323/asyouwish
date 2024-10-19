@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, Mail, Gift, Calendar, Settings, LogOut, PlusCircle, UserPlus } from 'lucide-react';
+import { User, Gift, Calendar, Settings, LogOut, PlusCircle, UserPlus } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";

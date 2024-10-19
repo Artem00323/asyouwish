@@ -11,8 +11,6 @@ interface BottomNavBarProps {
 }
 
 const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeTab, setActiveTab }) => {
-  const { theme } = useTheme();
-
   // Function to determine icon and text color
   const getColor = (isActive: boolean) => 
     isActive ? 'text-primary' : 'text-muted-foreground hover:text-primary';

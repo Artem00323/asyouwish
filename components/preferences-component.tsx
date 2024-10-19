@@ -6,8 +6,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { useTheme } from '@/components/theme-provider';
 
+interface Preferences {
+  theme: 'light' | 'dark' | 'system';
+  notifications: boolean;
+  language: string;
+}
+
 interface PreferencesComponentProps {
-  onSave: (preferences: any) => void;
+  onSave: (preferences: Preferences) => void;
   onCancel: () => void;
 }
 
@@ -17,7 +23,11 @@ export function PreferencesComponent({ onSave, onCancel }: PreferencesComponentP
   const [language, setLanguage] = React.useState('en');
 
   const handleSave = () => {
-    onSave({ darkMode: theme === 'dark', emailNotifications, language });
+    onSave({
+      theme: theme,
+      notifications: emailNotifications,
+      language: language
+    });
   };
 
   return (
