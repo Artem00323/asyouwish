@@ -123,8 +123,8 @@ export function ProfileComponent() {
   }
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-3xl font-bold text-indigo-800 mb-6">Profile</h2>
+    <div className="space-y-6 px-4 sm:px-6 md:px-8 max-w-full md:max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto">
+      <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-6">Profile</h2>
       
       {isEditing ? (
         <EditProfileComponent user={user} onSave={handleSaveProfile} onCancel={() => setIsEditing(false)} />
@@ -140,19 +140,19 @@ export function ProfileComponent() {
       ) : (
         <>
           {/* User Information Card */}
-          <Card className='hover:shadow-lg transition-shadow duration-300'>
-            <CardHeader className="flex flex-row items-center gap-4">
+          <Card className='hover:shadow-lg transition-shadow duration-300 overflow-hidden'>
+            <CardHeader className="flex flex-col sm:flex-row items-center gap-4">
               <Avatar className="w-20 h-20">
                 <AvatarImage src={user.avatar} alt={user.name} />
                 <AvatarFallback>{user.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
               </Avatar>
-              <div>
-                <CardTitle className="text-2xl">{user.name}</CardTitle>
-                <p className="text-gray-500">{user.email}</p>
+              <div className="text-center sm:text-left">
+                <CardTitle className="text-xl sm:text-2xl">{user.name}</CardTitle>
+                <p className="text-muted-foreground">{user.email}</p>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                 <div className="flex items-center gap-2">
                   <Calendar className="text-indigo-600" />
                   <span>Joined {formatDate(user.joinDate)}</span>
@@ -209,13 +209,13 @@ export function ProfileComponent() {
               <ul className="space-y-4">
                 {user.recentActivity.slice(0, 5).map((activity, index) => (
                   <li key={index} className="flex items-center gap-2">
-                    {activity.type === 'wishlist_created' && <Gift className="text-primary flex-shrink-0" />}
-                    {activity.type === 'item_added' && <PlusCircle className="text-primary flex-shrink-0" />}
-                    {activity.type === 'friendship_created' && <UserPlus className="text-primary flex-shrink-0" />}
-                    <span className="truncate flex-grow">
-                      {activity.title.length > 30 ? `${activity.title.substring(0, 30)}...` : activity.title}
+                    {activity.type === 'wishlist_created' && <Gift className="text-primary flex-shrink-0 w-4 h-4" />}
+                    {activity.type === 'item_added' && <PlusCircle className="text-primary flex-shrink-0 w-4 h-4" />}
+                    {activity.type === 'friendship_created' && <UserPlus className="text-primary flex-shrink-0 w-4 h-4" />}
+                    <span className="truncate flex-grow text-sm">
+                      {activity.title.length > 10 ? `${activity.title.substring(0, 10)}...` : activity.title}
                     </span>
-                    <span className="text-sm text-muted-foreground whitespace-nowrap">
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
                       {formatDate(new Date(activity.date))}
                     </span>
                   </li>
