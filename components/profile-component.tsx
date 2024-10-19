@@ -7,7 +7,7 @@ import { User, Mail, Gift, Calendar, Settings, LogOut, PlusCircle, UserPlus } fr
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 
 interface EventType {
   type: string;
