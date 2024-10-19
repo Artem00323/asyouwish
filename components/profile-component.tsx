@@ -209,11 +209,13 @@ export function ProfileComponent() {
               <ul className="space-y-4">
                 {user.recentActivity.slice(0, 5).map((activity, index) => (
                   <li key={index} className="flex items-center gap-2">
-                    {activity.type === 'wishlist_created' && <Gift className="text-indigo-600" />}
-                    {activity.type === 'item_added' && <PlusCircle className="text-indigo-600" />}
-                    {activity.type === 'friendship_created' && <UserPlus className="text-indigo-600" />}
-                    <span>{activity.title}</span>
-                    <span className="text-sm text-gray-500">
+                    {activity.type === 'wishlist_created' && <Gift className="text-primary flex-shrink-0" />}
+                    {activity.type === 'item_added' && <PlusCircle className="text-primary flex-shrink-0" />}
+                    {activity.type === 'friendship_created' && <UserPlus className="text-primary flex-shrink-0" />}
+                    <span className="truncate flex-grow">
+                      {activity.title.length > 30 ? `${activity.title.substring(0, 30)}...` : activity.title}
+                    </span>
+                    <span className="text-sm text-muted-foreground whitespace-nowrap">
                       {formatDate(new Date(activity.date))}
                     </span>
                   </li>

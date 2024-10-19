@@ -4,7 +4,7 @@
 
 :root {
   --background: #ffffff;
-  --foreground: 0 0% 0%;  /* Changed from 0 0% 3.9% to pure black for maximum contrast */
+  --foreground: #171717;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -88,5 +88,12 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+  }
+  main {
+    @apply bg-background;
+  }
+  .dark body,
+  .dark main {
+    @apply bg-[#0a0a0a];
   }
 }
