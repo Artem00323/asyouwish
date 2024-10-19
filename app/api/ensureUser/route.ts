@@ -25,6 +25,8 @@ export async function POST(request: Request) {
       name,
       email,
       password_hash,
+      join_date: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
     await ensureUserInDatabase(userData);
