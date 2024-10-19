@@ -247,7 +247,7 @@ export const getUserProfile = async (user_id: string): Promise<UserProfile> => {
   const { rows: friends } = await sql<{ count: number }>`
     SELECT COUNT(*) as count
     FROM friendships
-    WHERE (user_id = ${user_id} OR friend_id = ${user_id}) AND status = 'accept';
+    WHERE (user_id = ${user_id} OR friend_id = ${user_id}) AND status = 'accepted';
   `;
 
   const { rows: [latestEvent] } = await sql<EventType>`
