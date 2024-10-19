@@ -11,42 +11,28 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
-  // Helper function to determine text color
-  const getTextColor = (isActive: boolean) => (isActive ? 'text-white' : 'text-black');
-
   return (
-    <div className="w-64 bg-white h-full shadow-lg">
+    <div className="w-64 bg-card h-full shadow-lg">
       <div className="p-4">
-        <h1 className="text-2xl font-bold text-indigo-800 mb-4">AsYouWish</h1>
+        <h1 className="text-2xl font-bold text-primary mb-4">AsYouWish</h1>
         <nav>
-          <Button
-            variant={activeTab === 'your-wishlist' ? 'default' : 'ghost'}
-            className={`w-full justify-start mb-2 ${getTextColor(activeTab === 'your-wishlist')}`}
-            onClick={() => setActiveTab('your-wishlist')}
-          >
-            <Gift className="mr-2 h-4 w-4" /> Your Wishlist
-          </Button>
-          <Button
-            variant={activeTab === 'friends-wishlists' ? 'default' : 'ghost'}
-            className={`w-full justify-start mb-2 ${getTextColor(activeTab === 'friends-wishlists')}`}
-            onClick={() => setActiveTab('friends-wishlists')}
-          >
-            <Users className="mr-2 h-4 w-4" /> Friends&apos; Wishlists
-          </Button>
-          <Button
-            variant={activeTab === 'calendar-events' ? 'default' : 'ghost'}
-            className={`w-full justify-start mb-2 ${getTextColor(activeTab === 'calendar-events')}`}
-            onClick={() => setActiveTab('calendar-events')}
-          >
-            <CalendarIcon className="mr-2 h-4 w-4" /> Calendar Events
-          </Button>
-          <Button
-            variant={activeTab === 'profile' ? 'default' : 'ghost'}
-            className={`w-full justify-start mb-2 ${getTextColor(activeTab === 'profile')}`}
-            onClick={() => setActiveTab('profile')}
-          >
-            <User className="mr-2 h-4 w-4" /> Profile
-          </Button>
+          {[
+            { tab: 'your-wishlist', icon: Gift, label: 'Your Wishlist' },
+            { tab: 'friends-wishlists', icon: Users, label: "Friends' Wishlists" },
+            { tab: 'calendar-events', icon: CalendarIcon, label: 'Calendar Events' },
+            { tab: 'profile', icon: User, label: 'Profile' },
+          ].map(({ tab, icon: Icon, label }) => (
+            <Button
+              key={tab}
+              variant={activeTab === tab ? 'default' : 'ghost'}
+              className={`w-full justify-start mb-2 ${
+                activeTab === tab ? 'text-primary-foreground' : 'text-black dark:text-white hover:text-primary'
+              }`}
+              onClick={() => setActiveTab(tab as Tab)}
+            >
+              <Icon className="mr-2 h-4 w-4" /> {label}
+            </Button>
+          ))}
         </nav>
       </div>
     </div>
