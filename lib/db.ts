@@ -8,6 +8,7 @@ export interface User {
   password_hash: string;
   join_date: string;
   updated_at: string;
+  avatar_url?: string;
 }
 
 export interface Wishlist {
@@ -229,7 +230,7 @@ export interface EventType {
 
 export const getUserProfile = async (user_id: string): Promise<UserProfile> => {
   const { rows: [user] } = await sql<User>`
-    SELECT user_id, name, email, created_at as join_date
+    SELECT user_id, name, email, avatar_url, created_at as join_date
     FROM users
     WHERE user_id = ${user_id};
   `;
@@ -280,7 +281,7 @@ export const getUserProfile = async (user_id: string): Promise<UserProfile> => {
     id: user.user_id,
     name: user.name,
     email: user.email,
-    avatar: `/avatars/${user.name.split(' ')[0]}.jpg`,
+    avatar: user.avatar_url || `/avatars/default.png`,
     joinDate: user.join_date,
     wishlistCount: wishlists[0].count,
     friendsCount: friends[0].count,
