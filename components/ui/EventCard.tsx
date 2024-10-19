@@ -1,7 +1,7 @@
 // components/ui/EventCard.tsx
 
 import React from 'react';
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Gift, Calendar, ChevronRight } from 'lucide-react';
