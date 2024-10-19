@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from 'date-fns';
 import { EditProfileComponent } from './edit-profile-component';
+import { PreferencesComponent } from './preferences-component';
 
 interface EventType {
   type: string;
@@ -37,6 +38,7 @@ export function ProfileComponent() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [showPreferences, setShowPreferences] = useState(false);
 
   const formatDate = (dateInput: string | Date) => {
     const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
@@ -126,6 +128,15 @@ export function ProfileComponent() {
       
       {isEditing ? (
         <EditProfileComponent user={user} onSave={handleSaveProfile} onCancel={() => setIsEditing(false)} />
+      ) : showPreferences ? (
+        <PreferencesComponent 
+          onSave={(preferences) => {
+            // Handle saving preferences
+            console.log('Saving preferences:', preferences);
+            setShowPreferences(false);
+          }} 
+          onCancel={() => setShowPreferences(false)} 
+        />
       ) : (
         <>
           {/* User Information Card */}
@@ -176,7 +187,7 @@ export function ProfileComponent() {
               {/* <Button variant="outline" className="w-full justify-start">
                 <Mail className="mr-2 h-4 w-4" /> Update Email
               </Button> */}
-              <Button variant="outline" className="w-full justify-start">
+              <Button variant="outline" className="w-full justify-start" onClick={() => setShowPreferences(true)}>
                 <Settings className="mr-2 h-4 w-4" /> Preferences
               </Button>
               <Button
