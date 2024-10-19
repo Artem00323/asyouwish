@@ -1,7 +1,6 @@
 'use client';
 
 import { Gift, Users, Calendar as CalendarIcon, User } from 'lucide-react';
-import { useTheme } from '@/components/theme-provider';
 
 type Tab = 'your-wishlist' | 'friends-wishlists' | 'calendar-events' | 'profile';
 
