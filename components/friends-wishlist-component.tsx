@@ -112,7 +112,7 @@ export function FriendsWishlists() {
   return (
     <>
       <h2 className="text-3xl font-bold text-primary mb-6">Friends&apos; Wishlists</h2>
-      
+
       <div className="space-y-6 p-6 bg-card rounded-lg">
         <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
           <div className="relative flex-grow">
@@ -136,39 +136,40 @@ export function FriendsWishlists() {
         {error && <div className="text-red-500">{error}</div>}
         {successMessage && <div className="text-green-500">{successMessage}</div>}
 
-      {/* Pending Friend Requests */}
-      {pendingRequests.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-xl font-semibold mb-4 text-black">Pending Friend Requests</h3>
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
-            {pendingRequests.map((request) => (
-              <PendingRequestCard
-                key={request.user_id}
-                id={request.user_id}
-                name={request.name}
-                avatar={request.avatar}
-                onAccept={() => handleRespondToRequest(request.user_id, 'accept')}
-                onReject={() => handleRespondToRequest(request.user_id, 'reject')}
-              />
-            ))}
+        {/* Pending Friend Requests */}
+        {pendingRequests.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-xl font-semibold mb-4 text-black">Pending Friend Requests</h3>
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+              {pendingRequests.map((request) => (
+                <PendingRequestCard
+                  key={request.user_id}
+                  id={request.user_id}
+                  name={request.name}
+                  avatar={request.avatar}
+                  onAccept={() => handleRespondToRequest(request.user_id, 'accept')}
+                  onReject={() => handleRespondToRequest(request.user_id, 'reject')}
+                />
+              ))}
+            </div>
           </div>
         )}
-      </div>
 
-      {/* Friends List */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
-        {friends.map((friend) => (
-          <EventCard
-            key={friend.user_id}
-            id={friend.user_id}
-            name={friend.name}
-            date={new Date()} // Adjust as needed
-            avatar={friend.avatar || 'avatars/Me.jpg'}
-            eventType="Wishlist"
-            link={`/friend-wishlists/${friend.user_id}`}
-            hideEventType={true} // Hide the explanatory text
-          />
-        ))}
+        {/* Friends List */}
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+          {friends.map((friend) => (
+            <EventCard
+              key={friend.user_id}
+              id={friend.user_id}
+              name={friend.name}
+              date={new Date()} // Adjust as needed
+              avatar={friend.avatar || 'avatars/Me.jpg'}
+              eventType="Wishlist"
+              link={`/friend-wishlists/${friend.user_id}`}
+              hideEventType={true} // Hide the explanatory text
+            />
+          ))}
+        </div>
       </div>
     </>
   );
