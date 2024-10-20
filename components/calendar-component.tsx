@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Event } from '@/components/ui/types';
 
-export function CalendarComponent({ events = [] }: { events?: Event[] }) {
+export function CalendarComponent() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [eventsState, setEventsState] = useState<Event[]>([]);
 
