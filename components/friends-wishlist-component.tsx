@@ -110,30 +110,31 @@ export function FriendsWishlists() {
   };
 
   return (
-    <div className="space-y-6 p-6 bg-gray-50 rounded-lg">
+    <>
       <h2 className="text-3xl font-bold text-primary mb-6">Friends&apos; Wishlists</h2>
-
-      <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-6">
-        <div className="relative flex-grow">
-          <Input
-            type="text"
-            placeholder="Enter friend's user ID"
-            className="pl-4 pr-4 py-2 w-full bg-white text-black"
-            value={friendIdInput}
-            onChange={(e) => setFriendIdInput(e.target.value)}
-          />
+      
+      <div className="space-y-6 p-6 bg-card rounded-lg">
+        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+          <div className="relative flex-grow">
+            <Input
+              type="text"
+              placeholder="Enter friend's user ID"
+              className="pl-4 pr-4 py-2 w-full bg-background text-foreground"
+              value={friendIdInput}
+              onChange={(e) => setFriendIdInput(e.target.value)}
+            />
+          </div>
+          <Button
+            className="flex items-center justify-center space-x-2 w-full sm:w-auto"
+            onClick={handleAddFriend}
+          >
+            <UserPlus className="w-4 h-4" />
+            <span>Add Friend</span>
+          </Button>
         </div>
-        <Button
-          className="flex items-center justify-center space-x-2 w-full sm:w-auto"
-          onClick={handleAddFriend}
-        >
-          <UserPlus className="w-4 h-4" />
-          <span>Add Friend</span>
-        </Button>
-      </div>
 
-      {error && <div className="text-red-500">{error}</div>}
-      {successMessage && <div className="text-green-500">{successMessage}</div>}
+        {error && <div className="text-red-500">{error}</div>}
+        {successMessage && <div className="text-green-500">{successMessage}</div>}
 
       {/* Pending Friend Requests */}
       {pendingRequests.length > 0 && (
@@ -151,8 +152,8 @@ export function FriendsWishlists() {
               />
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Friends List */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
@@ -169,6 +170,6 @@ export function FriendsWishlists() {
           />
         ))}
       </div>
-    </div>
+    </>
   );
 }

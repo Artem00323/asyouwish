@@ -1,6 +1,7 @@
 // CustomReactSelect.tsx
 import React from 'react';
 import Select, { StylesConfig, SingleValue } from 'react-select';
+import { useTheme } from '@/components/theme-provider';
 
 interface OptionType<T> {
   value: T;
@@ -24,45 +25,54 @@ export function CustomReactSelect<T>({
   className,
   isSearchable = true,
 }: CustomReactSelectProps<T>) {
+  const { theme } = useTheme();
+
   const customStyles: StylesConfig<OptionType<T>, false> = {
     control: (provided, state) => ({
       ...provided,
-      backgroundColor: 'white',
-      borderColor: '#D1D5DB', // Tailwind's gray-300
-      color: 'black',
-      boxShadow: state.isFocused ? '0 0 0 2px rgba(99, 102, 241, 0.5)' : provided.boxShadow,
+      backgroundColor: theme === 'dark' ? 'hsl(var(--background))' : 'white',
+      borderColor: theme === 'dark' ? 'hsl(var(--border))' : '#D1D5DB',
+      color: theme === 'dark' ? 'hsl(var(--foreground))' : 'black',
+      boxShadow: state.isFocused ? '0 0 0 2px hsl(var(--ring))' : provided.boxShadow,
       '&:hover': {
-        borderColor: '#9CA3AF', // Tailwind's gray-400
+        borderColor: theme === 'dark' ? 'hsl(var(--input))' : '#9CA3AF',
       },
     }),
     menu: (provided) => ({
       ...provided,
-      borderColor: '#D1D5DB', // Tailwind's gray-300
+      backgroundColor: theme === 'dark' ? 'hsl(var(--background))' : 'white',
+      borderColor: theme === 'dark' ? 'hsl(var(--border))' : '#D1D5DB',
       boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
     }),
     option: (provided, state) => ({
       ...provided,
-      backgroundColor: state.isFocused ? '#E5E7EB' : 'white', // Tailwind's gray-200
-      color: 'black',
+      backgroundColor: state.isFocused
+        ? theme === 'dark'
+          ? 'hsl(var(--accent))'
+          : '#E5E7EB'
+        : theme === 'dark'
+        ? 'hsl(var(--background))'
+        : 'white',
+      color: theme === 'dark' ? 'hsl(var(--foreground))' : 'black',
       cursor: 'pointer',
       '&:active': {
-        backgroundColor: '#D1D5DB', // Tailwind's gray-300
+        backgroundColor: theme === 'dark' ? 'hsl(var(--accent))' : '#D1D5DB',
       },
     }),
     singleValue: (provided) => ({
       ...provided,
-      color: 'black',
+      color: theme === 'dark' ? 'hsl(var(--foreground))' : 'black',
     }),
     dropdownIndicator: (provided) => ({
       ...provided,
-      color: '#6B7280', // Tailwind's gray-500
+      color: theme === 'dark' ? 'hsl(var(--muted-foreground))' : '#6B7280',
       '&:hover': {
-        color: '#4B5563', // Tailwind's gray-600
+        color: theme === 'dark' ? 'hsl(var(--foreground))' : '#4B5563',
       },
     }),
     indicatorSeparator: (provided) => ({
       ...provided,
-      backgroundColor: '#D1D5DB', // Tailwind's gray-300
+      backgroundColor: theme === 'dark' ? 'hsl(var(--border))' : '#D1D5DB',
     }),
   };
 
