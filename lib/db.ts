@@ -170,7 +170,7 @@ export const addFriendship = async (
 // Function to get friends for a user
 export const getFriendsForUser = async (user_id: string): Promise<User[]> => {
   const { rows } = await sql<User>`
-    SELECT u.*
+    SELECT u.user_id, u.name, u.email, u.avatar_url
     FROM users u
     JOIN friendships f ON
       (f.user_id = ${user_id} AND f.friend_id = u.user_id)
