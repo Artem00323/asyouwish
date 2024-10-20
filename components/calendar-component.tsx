@@ -43,7 +43,7 @@ export function CalendarComponent() {
     };
 
     fetchEvents();
-  }, [selectedDate.getFullYear(), selectedDate.getMonth()]);
+  }, [selectedDate]);
 
   const getEventsForDate = (date: Date) => {
     return events.filter((event) => {

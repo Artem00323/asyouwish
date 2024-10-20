@@ -13,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 type Friend = {
   user_id: string;
   name: string;
+  avatar_url?: string;
   avatar?: string;
 };
 
@@ -39,7 +40,7 @@ export function FriendsWishlists() {
         const friendsResponse = await axios.post('/api/getFriends', {
           user_id: currentUserId,
         });
-        setFriends(friendsResponse.data.friends.map((friend: any) => ({
+        setFriends(friendsResponse.data.friends.map((friend: Friend) => ({
           user_id: friend.user_id,
           name: friend.name,
           avatar: friend.avatar_url || '/avatars/default.png',
@@ -130,15 +131,13 @@ export function FriendsWishlists() {
                 onChange={(e) => setFriendIdInput(e.target.value)}
               />
             </div>
-            <div className="flex-shrink-0">
-              <Button
-                className="flex items-center justify-center space-x-2 w-full sm:w-auto"
-                onClick={handleAddFriend}
-              >
-                <UserPlus className="w-4 h-4" />
-                <span>Add Friend</span>
-              </Button>
-            </div>
+            <Button
+              className="flex items-center justify-center space-x-2 w-full sm:w-auto"
+              onClick={handleAddFriend}
+            >
+              <UserPlus className="w-4 h-4" />
+              <span>Add Friend</span>
+            </Button>
           </div>
           {error && <div className="text-red-500 mt-2">{error}</div>}
           {successMessage && <div className="text-green-500 mt-2">{successMessage}</div>}

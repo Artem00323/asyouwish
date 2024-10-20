@@ -231,11 +231,16 @@ export function YourWishlistComponent({
     <>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
         <div className="flex items-center">
-          <Button variant="ghost" size="icon" onClick={onBack} className="mr-2 text-foreground">
+          <Button 
+            variant="outline" 
+            size="icon" 
+            onClick={onBack} 
+            className="mr-2 bg-background text-primary hover:bg-primary hover:text-background transition-colors duration-200"
+          >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <span className="text-4xl mr-2">{wishlistEmoji}</span>
-          <h2 className="text-3xl font-bold text-foreground">{wishlistName}</h2>
+          <h2 className="text-3xl font-bold text-primary">{wishlistName}</h2>
         </div>
         <div className="mt-4 md:mt-0 flex justify-center md:justify-end">
           <div className="flex space-x-2">
@@ -246,7 +251,7 @@ export function YourWishlistComponent({
               onClick={handleShareWishlist}
               variant="outline"
               size="sm"
-              className="w-24 text-foreground"
+              className="w-24 text-primary"
             >
               <Share2 className="mr-2 h-4 w-4" /> Share
             </Button>
