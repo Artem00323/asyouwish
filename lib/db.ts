@@ -170,7 +170,7 @@ export const addFriendship = async (
 // Function to get friends for a user
 export const getFriendsForUser = async (user_id: string): Promise<User[]> => {
   const { rows } = await sql<User>`
-    SELECT u.*
+    SELECT u.user_id, u.name, u.email, u.avatar_url
     FROM users u
     JOIN friendships f ON
       (f.user_id = ${user_id} AND f.friend_id = u.user_id)
@@ -289,3 +289,18 @@ export const getUserProfile = async (user_id: string): Promise<UserProfile> => {
     recentActivity: recentActivity,
   };
 };
+
+export const getEventsForUserAndFriends = async (user_id: string, startDate: Date, endDate: Date): Promise<Event[]> => {
+  const { rows } = await sql<Event>`
+    SELECT w.id, w.name as title, w.date, w.event_type as type, w.user_id as friendId, u.name as friendName
+    FROM wishlists w
+    JOIN users u ON w.user_id = u.user_id
+    LEFT JOIN friendships f ON (f.user_id = ${user_id} AND f.friend_id = w.user_id)
+                            OR (f.friend_id = ${user_id} AND f.user_id = w.user_id)
+    WHERE (f.status = 'accepted' OR w.user_id = ${user_id})
+      AND w.date BETWEEN ${startDate.toISOString()} AND ${endDate.toISOString()}
+    ORDER BY w.date ASC;
+  `;
+  return rows;
+};
+

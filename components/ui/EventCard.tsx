@@ -10,7 +10,7 @@ import Link from 'next/link';
 type EventCardProps = {
   id: string;
   name: string;
-  date: Date;
+  date?: Date;  // Make date optional
   emoji?: string; // For wishlists
   avatar?: string; // For friends
   eventType: string;
@@ -31,15 +31,15 @@ export function EventCard({
   hideEventType = false,
 }: EventCardProps) {
   // Format the date
-  const formattedDateMobile = date.toLocaleDateString('en-US', {
+  const formattedDateMobile = date ? date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
-  });
-  const formattedDateDesktop = date.toLocaleDateString('en-US', {
+  }) : '';
+  const formattedDateDesktop = date ? date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
-  });
+  }) : '';
 
   // Determine if the card should be clickable
   const isLink = Boolean(link || onSelect);

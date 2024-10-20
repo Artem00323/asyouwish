@@ -4,13 +4,14 @@ export interface OptionType {
     label: string;
 }
 
-export type Event = {
+export interface Event {
     id: string;
     title: string;
-    date: Date;
-    type: 'birthday' | 'event';
+    date: string;
+    type: string;
     friendId: string;
-};
+    friendname: string;
+}
 
 export type WishlistItem = {
     id: string;

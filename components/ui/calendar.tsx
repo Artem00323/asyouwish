@@ -54,18 +54,18 @@ export function Calendar({ events = [], onSelectDate, selectedDate }: CalendarPr
       const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), dayOfMonth);
       const isToday = isCurrentMonth && date.toDateString() === new Date().toDateString();
       const isSelected = isCurrentMonth && date.toDateString() === selectedDate.toDateString();
-      const eventsForDate = events.filter((e) => e.date.toDateString() === date.toDateString());
+      const eventsForDate = events.filter((e) => new Date(e.date).toDateString() === date.toDateString());
 
       cells.push(
         <div
           key={i}
           className={cn(
-            'border border-border p-1 md:p-2 relative cursor-pointer text-foreground overflow-hidden',
-            !isCurrentMonth && 'bg-muted text-muted-foreground',
-            isToday && 'bg-accent',
-            isSelected && 'bg-primary text-primary-foreground border-2 border-primary',
-            'transition-colors duration-200 hover:bg-accent hover:scale-105',
-            'h-20 md:h-24 w-full',
+            'border border-border p-1 md:p-2 relative cursor-pointer text-black overflow-hidden',
+            !isCurrentMonth && 'bg-muted text-black',
+            isToday && 'bg-accent text-black',
+            isSelected && 'bg-primary text-white',
+            'transition-colors duration-200',
+            'h-20 md:h-24 w-full rounded-lg'
           )}
           onClick={() => isCurrentMonth && onSelectDate(date)}
         >
@@ -73,32 +73,31 @@ export function Calendar({ events = [], onSelectDate, selectedDate }: CalendarPr
             <>
               <span className={cn(
                 'absolute top-1 left-1 text-xs md:text-sm',
-                isCurrentMonth ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500',
-                isSelected && 'font-bold text-primary-foreground'
+                isCurrentMonth ? 'text-black dark:text-gray-100' : 'text-gray-400 dark:text-gray-500',
+                isSelected && 'font-bold text-white dark:text-primary-foreground'
               )}>
                 {dayOfMonth}
               </span>
               {eventsForDate.length > 0 && (
                 <div className="absolute bottom-1 left-1 right-1 flex flex-col gap-1 overflow-hidden">
-                  {/* Dots on mobile, titles on desktop */}
                   <div className="flex md:hidden">
                     {eventsForDate.slice(0, 3).map((e) => (
-                      <span key={e.id} className="text-primary">
-                        <span className="inline-block w-2 h-2 rounded-full bg-primary"></span>
+                      <span key={e.id} className="text-blue-600 dark:text-blue-400">
+                        <span className="inline-block w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400"></span>
                       </span>
                     ))}
                     {eventsForDate.length > 3 && (
-                      <span className="text-xs text-primary">+{eventsForDate.length - 3}</span>
+                      <span className="text-xs text-blue-600 dark:text-blue-400">+{eventsForDate.length - 3}</span>
                     )}
                   </div>
                   <div className="hidden md:flex flex-col overflow-hidden">
                     {eventsForDate.slice(0, 2).map((e) => (
-                      <span key={e.id} className="text-xs text-primary truncate">
+                      <span key={e.id} className="text-xs text-blue-600 dark:text-blue-400 truncate">
                         • {e.title}
                       </span>
                     ))}
                     {eventsForDate.length > 2 && (
-                      <span className="text-xs text-primary">+{eventsForDate.length - 2}</span>
+                      <span className="text-xs text-blue-600 dark:text-blue-400">+{eventsForDate.length - 2}</span>
                     )}
                   </div>
                 </div>
@@ -118,7 +117,7 @@ export function Calendar({ events = [], onSelectDate, selectedDate }: CalendarPr
       <div className="flex items-center justify-between mb-4 text-foreground space-x-2">
         {/* Previous Button */}
         <Button onClick={prevMonth} variant="outline" size="icon">
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="h-4 w-4 text-black dark:text-white" />
         </Button>
 
         {/* Selectors */}
@@ -144,7 +143,7 @@ export function Calendar({ events = [], onSelectDate, selectedDate }: CalendarPr
 
         {/* Next Button */}
         <Button onClick={nextMonth} variant="outline" size="icon">
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-4 w-4 text-black dark:text-white" />
         </Button>
       </div>
 
@@ -153,7 +152,7 @@ export function Calendar({ events = [], onSelectDate, selectedDate }: CalendarPr
         <div className="grid grid-cols-7 gap-1 min-w-[300px]">
           {/* Weekday Headers */}
           {weekDays.map((day) => (
-            <div key={day} className="text-center font-semibold p-1 md:p-2 text-foreground text-xs md:text-base">
+            <div key={day} className="text-center font-semibold p-1 md:p-2 text-black dark:text-foreground text-xs md:text-base">
               <span className="md:hidden">{day.charAt(0)}</span>
               <span className="hidden md:inline">{day}</span>
             </div>
