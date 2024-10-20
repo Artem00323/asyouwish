@@ -40,7 +40,7 @@ export function CustomReactSelect<T>({
     }),
     menu: (provided) => ({
       ...provided,
-      backgroundColor: theme === 'dark' ? 'hsl(var(--background))' : 'white',
+      backgroundColor: theme === 'dark' ? 'hsl(var(--popover))' : 'white',
       borderColor: theme === 'dark' ? 'hsl(var(--border))' : '#D1D5DB',
       boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
     }),
@@ -51,9 +51,9 @@ export function CustomReactSelect<T>({
           ? 'hsl(var(--accent))'
           : '#E5E7EB'
         : theme === 'dark'
-        ? 'hsl(var(--background))'
+        ? 'hsl(var(--popover))'
         : 'white',
-      color: theme === 'dark' ? 'hsl(var(--foreground))' : 'black',
+      color: theme === 'dark' ? 'hsl(var(--popover-foreground))' : 'black',
       cursor: 'pointer',
       '&:active': {
         backgroundColor: theme === 'dark' ? 'hsl(var(--accent))' : '#D1D5DB',
@@ -61,7 +61,7 @@ export function CustomReactSelect<T>({
     }),
     singleValue: (provided) => ({
       ...provided,
-      color: theme === 'dark' ? 'hsl(var(--foreground))' : 'black',
+      color: theme === 'dark' ? 'hsl(var(--popover-foreground))' : 'black',
     }),
     dropdownIndicator: (provided) => ({
       ...provided,
