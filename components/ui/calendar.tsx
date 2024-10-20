@@ -54,18 +54,18 @@ export function Calendar({ events = [], onSelectDate, selectedDate }: CalendarPr
       const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), dayOfMonth);
       const isToday = isCurrentMonth && date.toDateString() === new Date().toDateString();
       const isSelected = isCurrentMonth && date.toDateString() === selectedDate.toDateString();
-      const eventsForDate = events.filter((e) => e.date.toDateString() === date.toDateString());
+      const eventsForDate = events.filter((e) => new Date(e.date).toDateString() === date.toDateString());
 
       cells.push(
         <div
           key={i}
           className={cn(
-            'border border-border p-1 md:p-2 relative cursor-pointer text-black overflow-hidden group',
+            'border border-border p-1 md:p-2 relative cursor-pointer text-black overflow-hidden',
             !isCurrentMonth && 'bg-muted text-black',
             isToday && 'bg-accent text-black',
-            isSelected && 'bg-primary text-white border-2 border-primary',
-            'transition-colors duration-200 hover:bg-accent hover:scale-105',
-            'h-20 md:h-24 w-full',
+            isSelected && 'bg-primary text-white',
+            'transition-colors duration-200',
+            'h-20 md:h-24 w-full rounded-lg'
           )}
           onClick={() => isCurrentMonth && onSelectDate(date)}
         >
@@ -74,32 +74,30 @@ export function Calendar({ events = [], onSelectDate, selectedDate }: CalendarPr
               <span className={cn(
                 'absolute top-1 left-1 text-xs md:text-sm',
                 isCurrentMonth ? 'text-black dark:text-gray-100' : 'text-gray-400 dark:text-gray-500',
-                isSelected && 'font-bold text-white dark:text-primary-foreground',
-                'group-hover:text-black dark:group-hover:text-white'
+                isSelected && 'font-bold text-white dark:text-primary-foreground'
               )}>
                 {dayOfMonth}
               </span>
               {eventsForDate.length > 0 && (
                 <div className="absolute bottom-1 left-1 right-1 flex flex-col gap-1 overflow-hidden">
-                  {/* Dots on mobile, titles on desktop */}
                   <div className="flex md:hidden">
                     {eventsForDate.slice(0, 3).map((e) => (
-                      <span key={e.id} className="text-primary">
-                        <span className="inline-block w-2 h-2 rounded-full bg-primary"></span>
+                      <span key={e.id} className="text-blue-600 dark:text-blue-400">
+                        <span className="inline-block w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400"></span>
                       </span>
                     ))}
                     {eventsForDate.length > 3 && (
-                      <span className="text-xs text-primary">+{eventsForDate.length - 3}</span>
+                      <span className="text-xs text-blue-600 dark:text-blue-400">+{eventsForDate.length - 3}</span>
                     )}
                   </div>
                   <div className="hidden md:flex flex-col overflow-hidden">
                     {eventsForDate.slice(0, 2).map((e) => (
-                      <span key={e.id} className="text-xs text-black dark:text-primary truncate">
+                      <span key={e.id} className="text-xs text-blue-600 dark:text-blue-400 truncate">
                         • {e.title}
                       </span>
                     ))}
                     {eventsForDate.length > 2 && (
-                      <span className="text-xs text-primary">+{eventsForDate.length - 2}</span>
+                      <span className="text-xs text-blue-600 dark:text-blue-400">+{eventsForDate.length - 2}</span>
                     )}
                   </div>
                 </div>

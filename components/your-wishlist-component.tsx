@@ -231,11 +231,11 @@ export function YourWishlistComponent({
     <>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
         <div className="flex items-center">
-          <Button variant="ghost" size="icon" onClick={onBack} className="mr-2 text-black">
+          <Button variant="ghost" size="icon" onClick={onBack} className="mr-2 text-foreground">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <span className="text-4xl mr-2">{wishlistEmoji}</span>
-          <h2 className="text-3xl font-bold text-black">{wishlistName}</h2>
+          <h2 className="text-3xl font-bold text-foreground">{wishlistName}</h2>
         </div>
         <div className="mt-4 md:mt-0 flex justify-center md:justify-end">
           <div className="flex space-x-2">
@@ -246,7 +246,7 @@ export function YourWishlistComponent({
               onClick={handleShareWishlist}
               variant="outline"
               size="sm"
-              className="w-24 text-black"
+              className="w-24 text-foreground"
             >
               <Share2 className="mr-2 h-4 w-4" /> Share
             </Button>
@@ -255,13 +255,13 @@ export function YourWishlistComponent({
       </div>
 
       {isLoadingItems ? (
-        <div>Loading items...</div>
+        <div className="text-foreground">Loading items...</div>
       ) : (
         <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3 md:gap-4">
           {wishlistItems.map((item) => (
             <Card
               key={item.id}
-              className="overflow-hidden hover:shadow-lg transition-shadow duration-300"
+              className="overflow-hidden hover:shadow-lg transition-shadow duration-300 bg-card flex flex-col"
             >
               <div className="relative w-full h-40 md:h-48">
                 <Image
@@ -272,17 +272,21 @@ export function YourWishlistComponent({
                   className="rounded-t-md"
                 />
               </div>
-              <CardContent className="p-2 md:p-4">
-                <h3 className="text-lg md:text-xl font-semibold mb-1 md:mb-2">{item.name}</h3>
+              <CardContent className="p-2 md:p-4 flex-grow flex flex-col">
+                <div className="h-14 mb-2">
+                  <h3 className="text-lg md:text-xl font-semibold text-foreground line-clamp-2">
+                    {item.name}
+                  </h3>
+                </div>
                 <Progress
                   value={(item.contributed / item.price) * 100}
                   className="mb-1 md:mb-2"
                 />
-                <p className="text-xs md:text-sm text-gray-600">
+                <p className="text-xs md:text-sm text-muted-foreground mt-auto">
                   {item.contributed}₽ raised of {item.price}₽
                 </p>
               </CardContent>
-              <CardFooter className="bg-gray-50 p-2 md:p-4 flex justify-between">
+              <CardFooter className="bg-secondary p-2 md:p-4 flex justify-between">
                 <Button
                   variant="destructive"
                   size="sm"
