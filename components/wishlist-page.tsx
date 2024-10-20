@@ -132,7 +132,7 @@ export function WishlistPageComponent() {
             )
           )}
           {activeTab === 'friends-wishlists' && <FriendsWishlists />}
-          {activeTab === 'calendar-events' && <CalendarComponent events={[]} />}
+          {activeTab === 'calendar-events' && <CalendarComponent />}
           {activeTab === 'profile' && <ProfileComponent />}
         </main>
 

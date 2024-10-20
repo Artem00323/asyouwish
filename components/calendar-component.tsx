@@ -8,9 +8,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Event } from '@/components/ui/types';
 
-export function CalendarComponent() {
+export function CalendarComponent({ events = [] }: { events?: Event[] }) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [events, setEvents] = useState<Event[]>([]);
+  const [eventsState, setEventsState] = useState<Event[]>([]);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -36,7 +36,7 @@ export function CalendarComponent() {
 
         const data = await response.json();
         console.log('Fetched events:', data.events);
-        setEvents(data.events);
+        setEventsState(data.events);
       } catch (error) {
         console.error('Error fetching events:', error);
       }
@@ -46,7 +46,7 @@ export function CalendarComponent() {
   }, [selectedDate]);
 
   const getEventsForDate = (date: Date) => {
-    return events.filter((event) => {
+    return eventsState.filter((event) => {
       const eventDate = new Date(event.date);
       return (
         eventDate.getDate() === date.getDate() &&
@@ -62,7 +62,7 @@ export function CalendarComponent() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Calendar */}
         <div className="lg:col-span-2">
-          <Calendar events={events} onSelectDate={setSelectedDate} selectedDate={selectedDate} />
+          <Calendar events={eventsState} onSelectDate={setSelectedDate} selectedDate={selectedDate} />
         </div>
         {/* Events List */}
         <Card className="p-4 overflow-auto hover:shadow-lg transition-shadow duration-300 bg-card">
