@@ -10,7 +10,7 @@ import Link from 'next/link';
 type EventCardProps = {
   id: string;
   name: string;
-  date: Date;  // Date is now required
+  date?: Date; // Date is optional
   emoji?: string; // For wishlists
   avatar?: string; // For friends
   eventType: string;
@@ -31,15 +31,19 @@ export function EventCard({
   hideEventType = false,
 }: EventCardProps) {
   // Format the date
-  const formattedDateMobile = date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-  });
-  const formattedDateDesktop = date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  const formattedDateMobile = date
+    ? date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+      })
+    : '';
+  const formattedDateDesktop = date
+    ? date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : '';
 
   // Determine if the card should be clickable
   const isLink = Boolean(link || onSelect);
@@ -86,7 +90,7 @@ export function EventCard({
               )}
             </p>
           )}
-          <p className="text-sm text-gray-500">{formattedDateMobile}</p>
+          {date && <p className="text-sm text-gray-500">{formattedDateMobile}</p>}
         </div>
       </div>
 
@@ -144,9 +148,11 @@ export function EventCard({
       </div>
 
       {/* Date */}
-      <div className="mt-4">
-        <p className="text-sm text-gray-600">{formattedDateDesktop}</p>
-      </div>
+      {date && (
+        <div className="mt-4">
+          <p className="text-sm text-gray-600">{formattedDateDesktop}</p>
+        </div>
+      )}
 
       {/* Button */}
       <div className="mt-4">
