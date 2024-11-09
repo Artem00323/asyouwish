@@ -9,11 +9,11 @@ import { Modal } from '@/components/ui/modal';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/components/backend/firebase';
 
-// Define the Wishlist type with optional date
+// Define the Wishlist type with date required
 type Wishlist = {
   id: string;
   name: string;
-  date?: Date; // Make date optional
+  date: Date; // Date is now required
   emoji: string;
   eventType: string;
 };
@@ -99,6 +99,19 @@ function AddWishlistModal({ onClose, onAddWishlist }: AddWishlistModalProps) {
     }
     setIsSubmitting(true);
 
+    // Validate required fields
+    if (!name.trim()) {
+      alert('Please enter a name for your wishlist');
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (!date.trim()) {
+      alert('Please select a date for your wishlist');
+      setIsSubmitting(false);
+      return;
+    }
+
     // Validate custom event name and emoji
     if (eventType === 'custom') {
       if (!customEventName.trim()) {
@@ -120,7 +133,7 @@ function AddWishlistModal({ onClose, onAddWishlist }: AddWishlistModalProps) {
     const newWishlistData = {
       user_id: user.uid,
       name,
-      date: date || null, // Set to null if date is empty
+      date, // Date in ISO string format
       emoji,
       event_type: eventTypeName,
     };
@@ -139,14 +152,14 @@ function AddWishlistModal({ onClose, onAddWishlist }: AddWishlistModalProps) {
       const data = await response.json();
       const addedWishlist = data.wishlist;
 
-      // Convert date string to Date object if it exists
-      const wishlistDate = addedWishlist.date ? new Date(addedWishlist.date) : undefined;
+      // Convert date string to Date object
+      addedWishlist.date = new Date(addedWishlist.date);
 
       // Cast data to Wishlist type
       const wishlist: Wishlist = {
         id: addedWishlist.id,
         name: addedWishlist.name,
-        date: wishlistDate,
+        date: addedWishlist.date,
         emoji: addedWishlist.emoji,
         eventType: addedWishlist.event_type,
       };
@@ -184,9 +197,7 @@ function AddWishlistModal({ onClose, onAddWishlist }: AddWishlistModalProps) {
         </div>
         {/* Event Date Input */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">
-            Event Date (Optional)
-          </label>
+          <label className="block text-sm font-medium text-gray-700">Event Date</label>
           <input
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
             type="date"

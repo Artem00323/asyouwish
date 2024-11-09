@@ -1,16 +1,16 @@
 // components/ui/EventCard.tsx
 
 import React from 'react';
-import { Card, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
+import { Card, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { Gift, Calendar, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
 type EventCardProps = {
   id: string;
   name: string;
-  date?: Date; // Make date optional
+  date: Date;  // Date is now required
   emoji?: string; // For wishlists
   avatar?: string; // For friends
   eventType: string;
@@ -31,19 +31,15 @@ export function EventCard({
   hideEventType = false,
 }: EventCardProps) {
   // Format the date
-  const formattedDateMobile = date
-    ? date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-      })
-    : '';
-  const formattedDateDesktop = date
-    ? date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
-    : '';
+  const formattedDateMobile = date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  });
+  const formattedDateDesktop = date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
 
   // Determine if the card should be clickable
   const isLink = Boolean(link || onSelect);
@@ -65,12 +61,7 @@ export function EventCard({
         {avatar ? (
           <Avatar className="w-12 h-12">
             <AvatarImage src={avatar} alt={name} />
-            <AvatarFallback>
-              {name
-                .split(' ')
-                .map((n) => n[0])
-                .join('')}
-            </AvatarFallback>
+            <AvatarFallback>{name.split(' ').map((n) => n[0]).join('')}</AvatarFallback>
           </Avatar>
         ) : (
           <Avatar className="w-12 h-12">
@@ -95,7 +86,7 @@ export function EventCard({
               )}
             </p>
           )}
-          {date && <p className="text-sm text-gray-500">{formattedDateMobile}</p>}
+          <p className="text-sm text-gray-500">{formattedDateMobile}</p>
         </div>
       </div>
 
@@ -120,12 +111,7 @@ export function EventCard({
         {avatar ? (
           <Avatar className="w-12 h-12">
             <AvatarImage src={avatar} alt={name} />
-            <AvatarFallback>
-              {name
-                .split(' ')
-                .map((n) => n[0])
-                .join('')}
-            </AvatarFallback>
+            <AvatarFallback>{name.split(' ').map((n) => n[0]).join('')}</AvatarFallback>
           </Avatar>
         ) : (
           <Avatar className="w-12 h-12">
@@ -158,11 +144,9 @@ export function EventCard({
       </div>
 
       {/* Date */}
-      {date && (
-        <div className="mt-4">
-          <p className="text-sm text-gray-600">{formattedDateDesktop}</p>
-        </div>
-      )}
+      <div className="mt-4">
+        <p className="text-sm text-gray-600">{formattedDateDesktop}</p>
+      </div>
 
       {/* Button */}
       <div className="mt-4">
