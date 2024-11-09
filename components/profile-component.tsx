@@ -11,7 +11,6 @@ import { format } from 'date-fns';
 import { EditProfileComponent } from './edit-profile-component';
 import { PreferencesComponent } from './preferences-component';
 import { toast } from 'sonner';
-import { Toaster } from 'sonner';
 
 interface EventType {
   type: string;

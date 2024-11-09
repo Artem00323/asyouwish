@@ -30,8 +30,6 @@ export function EventCard({
   link,
   hideEventType = false,
 }: EventCardProps) {
-  // Ensure date is a valid Date object
-  const eventDate = date ? new Date(date) : new Date();
 
   // Format the date
   const formattedDateMobile = date
