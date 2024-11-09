@@ -13,15 +13,25 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/components/backend/firebase';
 import { Item } from '@/lib/db';
 import { Wishlist } from './ui/types';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { motion } from 'framer-motion';
 
 interface ItemData {
   name: string;
-  image: string | File; // Accept both string and File for the image
+  image?: string | File;
   price: number;
   description: string;
 }
 
-type WishlistItem = Item;
+type WishlistItem = {
+  id: number;
+  wishlist_id: string;
+  name: string;
+  image: string;
+  price: number;
+  contributed: number;
+  description: string;
+};
 
 type YourWishlistComponentProps = {
   wishlistId: string; // UUID
@@ -45,6 +55,9 @@ export function YourWishlistComponent({
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<WishlistItem | null>(null);
+  const [showFullDescription, setShowFullDescription] = useState(false);
 
   // Get current user
   const [user] = useAuthState(auth);
@@ -98,18 +111,19 @@ export function YourWishlistComponent({
 
       // Handle image upload separately if image is a File
       let imageUrl = '';
-      if (typeof newItem.image === 'string') {
-        imageUrl = newItem.image;
-      } else {
-        // For simplicity, we'll convert the image file to a base64 string
-        const reader = new FileReader();
-        reader.readAsDataURL(newItem.image);
-        await new Promise((resolve) => {
-          reader.onload = () => {
-            imageUrl = reader.result as string;
-            resolve(null);
-          };
-        });
+      if (newItem.image) {
+        if (typeof newItem.image === 'string') {
+          imageUrl = newItem.image;
+        } else if (newItem.image instanceof File) {
+          const reader = new FileReader();
+          reader.readAsDataURL(newItem.image);
+          await new Promise((resolve) => {
+            reader.onload = () => {
+              imageUrl = reader.result as string;
+              resolve(null);
+            };
+          });
+        }
       }
 
       const response = await fetch('/api/addItem', {
@@ -138,8 +152,8 @@ export function YourWishlistComponent({
         wishlist_id: data.item.wishlist_id,
         name: data.item.name,
         image: data.item.image,
-        price: parseFloat(data.item.price),
-        contributed: parseFloat(data.item.contributed),
+        price: Number(data.item.price),
+        contributed: Number(data.item.contributed),
         description: data.item.description,
       };
 
@@ -181,7 +195,11 @@ export function YourWishlistComponent({
   };
 
   const handleItemDetails = (id: number) => {
-    console.log('Item details clicked for id:', id);
+    const item = wishlistItems.find(item => item.id === id);
+    if (item) {
+      setSelectedItem(item);
+      setIsDetailsModalOpen(true);
+    }
   };
 
   // Function to delete the wishlist
@@ -226,6 +244,15 @@ export function YourWishlistComponent({
       setWishlistLink(`${window.location.origin}/wishlist/${wishlistId}`);
     }
   }, [wishlistId]);
+
+  const toggleShowMore = () => {
+    setShowFullDescription(!showFullDescription);
+  };
+
+  const truncateDescription = (description: string, length: number) => {
+    if (description.length <= length) return description;
+    return description.substring(0, length) + '...';
+  };
 
   return (
     <>
@@ -372,6 +399,66 @@ export function YourWishlistComponent({
             </div>
           </div>
         </Modal>
+      )}
+
+      {/* Item Details Modal */}
+      {isDetailsModalOpen && selectedItem && (
+        <Dialog open={isDetailsModalOpen} onOpenChange={() => setIsDetailsModalOpen(false)}>
+          <DialogContent className="sm:max-w-[550px]">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold">Item Details</DialogTitle>
+            </DialogHeader>
+            <div className="max-h-[400px] overflow-y-auto px-4">
+              <Card className="border-none shadow-none">
+                <CardContent className="p-0">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <Card className="mt-4 border border-gray-200">
+                      <CardContent className="p-4">
+                        <div className="relative w-full h-40 mb-4 overflow-hidden rounded-md">
+                          <Image
+                            src={selectedItem.image}
+                            alt={selectedItem.name}
+                            fill
+                            style={{ objectFit: 'cover' }}
+                            className="transition-transform duration-300 hover:scale-105"
+                          />
+                        </div>
+                        <h3 className="text-lg font-semibold mb-2">{selectedItem.name}</h3>
+                        <p className="text-sm text-violet-600 font-medium mb-2">
+                          {Number(selectedItem.price).toFixed(2)}₽
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {showFullDescription
+                            ? selectedItem.description
+                            : truncateDescription(selectedItem.description, 100)}
+                          {selectedItem.description.length > 100 && (
+                            <button 
+                              className="text-violet-600 hover:text-violet-700 ml-1 focus:outline-none" 
+                              onClick={toggleShowMore}
+                            >
+                              {showFullDescription ? 'Show less' : 'Show more'}
+                            </button>
+                          )}
+                        </p>
+                        <Progress
+                          value={(selectedItem.contributed / selectedItem.price) * 100}
+                          className="mt-4"
+                        />
+                        <p className="text-xs text-muted-foreground mt-2">
+                          {selectedItem.contributed}₽ raised of {selectedItem.price}₽
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </CardContent>
+              </Card>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </>
   );

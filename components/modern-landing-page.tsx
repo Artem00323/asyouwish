@@ -12,7 +12,7 @@ export function ModernLandingPageComponent() {
   const [email, setEmail] = useState('')
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 flex flex-col">
       <header className="container mx-auto px-4 py-6 flex justify-between items-center">
         <motion.h1 
           initial={{ opacity: 0, y: -20 }}
@@ -113,7 +113,7 @@ export function ModernLandingPageComponent() {
           </div>
         </section>
       </main>
-      <footer className="bg-indigo-900 text-white py-8">
+      <footer className="bg-indigo-900 text-white py-8 mt-auto">
         <div className="container mx-auto px-4 text-center">
           <p className="mb-4">&copy; 2024 AsYouWish. All rights reserved.</p>
           <div className="flex justify-center space-x-4">

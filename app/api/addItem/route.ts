@@ -8,7 +8,7 @@ import { admin } from '@/components/backend/firebaseAdmin';
 const requestSchema = z.object({
   wishlist_id: z.string(),
   name: z.string(),
-  image: z.string(),
+  image: z.string().optional(),
   price: z.number(),
   description: z.string(),
 });
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     const newItem = await addItemToWishlist({
       wishlist_id,
       name,
-      image,
+      image: image || '',
       price,
       description,
     });

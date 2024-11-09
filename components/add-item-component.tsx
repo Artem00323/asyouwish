@@ -14,7 +14,7 @@ import { PlusCircle, Link, Upload, RussianRuble } from 'lucide-react';
 
 interface ItemData {
   name: string;
-  image: string | File;
+  image?: string | File;
   price: number;
   description: string;
 }
@@ -26,11 +26,12 @@ interface AddItemModalProps {
 }
 
 export function AddItemModal({ isOpen, onClose, onAddItem }: AddItemModalProps) {
-  const [manualData, setManualData] = useState<ItemData>({ name: '', image: '', price: 0, description: '' });
+  const [manualData, setManualData] = useState<ItemData>({ name: '', price: 0, description: '' });
   const [linkData, setLinkData] = useState('');
   const [parsedItem, setParsedItem] = useState<ItemData | null>(null);
   const [isParsing, setIsParsing] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const [price, setPrice] = useState<string>('');
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -47,7 +48,7 @@ export function AddItemModal({ isOpen, onClose, onAddItem }: AddItemModalProps) 
   };
 
   const handleAddManualItem = () => {
-    if (manualData.name && manualData.price > 0 && manualData.image) {
+    if (manualData.name && manualData.price > 0) {
       onAddItem(manualData);
       onClose();
     } else {
@@ -114,6 +115,13 @@ export function AddItemModal({ isOpen, onClose, onAddItem }: AddItemModalProps) 
     return description.substring(0, length) + '...';
   };
 
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === '' || /^\d+$/.test(value)) {
+      setPrice(value);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[550px]">
@@ -149,7 +157,7 @@ export function AddItemModal({ isOpen, onClose, onAddItem }: AddItemModalProps) 
                       className="hidden"
                     />
                   </div>
-                  {manualData.image && typeof manualData.image !== 'string' && (
+                  {manualData.image && typeof manualData.image === 'object' && (
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -172,9 +180,9 @@ export function AddItemModal({ isOpen, onClose, onAddItem }: AddItemModalProps) 
                     <Input
                       id="price"
                       name="price"
-                      type="number"
-                      value={manualData.price}
-                      onChange={handleManualDataChange}
+                      type="text"
+                      value={price}
+                      onChange={handlePriceChange}
                       min="0"
                       step="any"
                       className="pl-10 border-gray-300"
@@ -223,7 +231,11 @@ export function AddItemModal({ isOpen, onClose, onAddItem }: AddItemModalProps) 
                           <CardContent className="p-4">
                             <div className="relative w-full h-40 mb-4 overflow-hidden rounded-md">
                               <Image
-                                src={typeof parsedItem.image === 'string' ? parsedItem.image : URL.createObjectURL(parsedItem.image)}
+                                src={typeof parsedItem.image === 'string' 
+                                    ? parsedItem.image 
+                                    : parsedItem.image instanceof File 
+                                        ? URL.createObjectURL(parsedItem.image) 
+                                        : ''}
                                 alt={parsedItem.name}
                                 fill
                                 style={{ objectFit: 'cover' }}
