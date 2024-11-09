@@ -17,7 +17,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
         <h1 className="text-2xl font-bold text-primary mb-4">AsYouWish</h1>
         <nav>
           {[
-            { tab: 'your-wishlist', icon: Gift, label: 'Your Wishlist' },
+            { tab: 'your-wishlist', icon: Gift, label: 'Your Wishlists' },
             { tab: 'friends-wishlists', icon: Users, label: "Friends' Wishlists" },
             { tab: 'calendar-events', icon: CalendarIcon, label: 'Calendar Events' },
             { tab: 'profile', icon: User, label: 'Profile' },

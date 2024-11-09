@@ -18,7 +18,7 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeTab, setActiveTab }) 
     <div className="fixed bottom-0 left-0 right-0 bg-card shadow-md flex justify-around py-2">
       <button onClick={() => setActiveTab('your-wishlist')} className="flex flex-col items-center">
         <Gift className={`h-6 w-6 ${getColor(activeTab === 'your-wishlist')}`} />
-        <span className={`text-xs ${getColor(activeTab === 'your-wishlist')}`}>Your Wishlist</span>
+        <span className={`text-xs ${getColor(activeTab === 'your-wishlist')}`}>Your Wishlists</span>
       </button>
       <button onClick={() => setActiveTab('friends-wishlists')} className="flex flex-col items-center">
         <Users className={`h-6 w-6 ${getColor(activeTab === 'friends-wishlists')}`} />

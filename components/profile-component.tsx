@@ -3,13 +3,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, Gift, Calendar, Settings, LogOut, PlusCircle, UserPlus } from 'lucide-react';
+import { User, Gift, Calendar, Settings, LogOut, PlusCircle, UserPlus, Copy } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from 'date-fns';
 import { EditProfileComponent } from './edit-profile-component';
 import { PreferencesComponent } from './preferences-component';
+import { toast } from 'sonner';
+import { Toaster } from 'sonner';
 
 interface EventType {
   type: string;
@@ -114,6 +116,18 @@ export function ProfileComponent() {
     }
   };
 
+  const copyUserId = async () => {
+    if (user?.id) {
+      try {
+        await navigator.clipboard.writeText(user.id);
+        toast.success('User ID copied to clipboard');
+      } catch (err) {
+        toast.error('Failed to copy User ID');
+        console.error('Failed to copy:', err);
+      }
+    }
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -146,9 +160,21 @@ export function ProfileComponent() {
                 <AvatarImage src={user.avatar} alt={user.name} />
                 <AvatarFallback>{user.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
               </Avatar>
-              <div className="text-center sm:text-left">
+              <div className="text-center sm:text-left space-y-2">
                 <CardTitle className="text-xl sm:text-2xl">{user.name}</CardTitle>
                 <p className="text-muted-foreground">{user.email}</p>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span>ID: {user.id}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={copyUserId}
+                    title="Copy User ID"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
