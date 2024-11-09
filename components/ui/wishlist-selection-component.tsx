@@ -1,3 +1,4 @@
+// ui/wishlist-selection-component.tsx
 'use client';
 
 import { EventCard } from '@/components/ui/EventCard';
@@ -8,11 +9,11 @@ import { Modal } from '@/components/ui/modal';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/components/backend/firebase';
 
-// Определяем тип Wishlist
+// Define the Wishlist type with optional date
 type Wishlist = {
   id: string;
   name: string;
-  date: Date;
+  date?: Date; // Make date optional
   emoji: string;
   eventType: string;
 };
@@ -57,7 +58,7 @@ export function WishlistSelectionComponent({
         <AddWishlistModal
           onClose={() => setIsAddWishlistModalOpen(false)}
           onAddWishlist={(newWishlist) => {
-            // Обновляем состояние wishlists с новым списком желаний
+            // Update the wishlists state with the new wishlist
             setWishlists([...wishlists, newWishlist]);
           }}
         />
@@ -66,7 +67,7 @@ export function WishlistSelectionComponent({
   );
 }
 
-// Определяем компонент AddWishlistModal
+// Define the AddWishlistModal component
 type AddWishlistModalProps = {
   onClose: () => void;
   onAddWishlist: (wishlist: Wishlist) => void;
@@ -79,7 +80,11 @@ function AddWishlistModal({ onClose, onAddWishlist }: AddWishlistModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [user] = useAuthState(auth);
 
-  // Карта соответствия типов событий и эмодзи
+  // New state variables for custom event name and emoji
+  const [customEventName, setCustomEventName] = useState('');
+  const [customEventEmoji, setCustomEventEmoji] = useState('');
+
+  // Event type to emoji mapping
   const eventEmojis: { [key: string]: string } = {
     birthday: '🎂',
     newyear: '🎉',
@@ -94,13 +99,30 @@ function AddWishlistModal({ onClose, onAddWishlist }: AddWishlistModalProps) {
     }
     setIsSubmitting(true);
 
-    const emoji = eventEmojis[eventType] || '🎁'; // Устанавливаем эмодзи на основе типа события
+    // Validate custom event name and emoji
+    if (eventType === 'custom') {
+      if (!customEventName.trim()) {
+        alert('Please enter a custom event name');
+        setIsSubmitting(false);
+        return;
+      }
+      if (!customEventEmoji.trim()) {
+        alert('Please enter an emoji for your custom event');
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
+    const emoji =
+      eventType === 'custom' ? customEventEmoji || '🎁' : eventEmojis[eventType] || '🎁';
+    const eventTypeName = eventType === 'custom' ? customEventName : eventType;
+
     const newWishlistData = {
       user_id: user.uid,
       name,
-      date, // Дата в формате строки ISO
+      date: date || null, // Set to null if date is empty
       emoji,
-      event_type: eventType,
+      event_type: eventTypeName,
     };
 
     try {
@@ -117,14 +139,14 @@ function AddWishlistModal({ onClose, onAddWishlist }: AddWishlistModalProps) {
       const data = await response.json();
       const addedWishlist = data.wishlist;
 
-      // Преобразуем строку даты в объект Date
-      addedWishlist.date = new Date(addedWishlist.date);
+      // Convert date string to Date object if it exists
+      const wishlistDate = addedWishlist.date ? new Date(addedWishlist.date) : undefined;
 
-      // Приводим данные к типу Wishlist
+      // Cast data to Wishlist type
       const wishlist: Wishlist = {
         id: addedWishlist.id,
         name: addedWishlist.name,
-        date: addedWishlist.date,
+        date: wishlistDate,
         emoji: addedWishlist.emoji,
         eventType: addedWishlist.event_type,
       };
@@ -132,10 +154,12 @@ function AddWishlistModal({ onClose, onAddWishlist }: AddWishlistModalProps) {
       onAddWishlist(wishlist);
       onClose();
 
-      // Сбрасываем форму
+      // Reset the form
       setName('');
       setDate('');
       setEventType('birthday');
+      setCustomEventName('');
+      setCustomEventEmoji('');
     } catch (error) {
       console.error('Error adding wishlist:', error);
       alert('An error occurred while adding the wishlist');
@@ -148,6 +172,7 @@ function AddWishlistModal({ onClose, onAddWishlist }: AddWishlistModalProps) {
     <Modal onClose={onClose}>
       <div className="p-4 text-black">
         <h2 className="text-lg font-semibold mb-4">Add New Wishlist</h2>
+        {/* Wishlist Name Input */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700">Name</label>
           <input
@@ -157,9 +182,11 @@ function AddWishlistModal({ onClose, onAddWishlist }: AddWishlistModalProps) {
             onChange={(e) => setName(e.target.value)}
           />
         </div>
-        {/* Поле для ввода даты */}
+        {/* Event Date Input */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Event Date</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Event Date (Optional)
+          </label>
           <input
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
             type="date"
@@ -167,7 +194,7 @@ function AddWishlistModal({ onClose, onAddWishlist }: AddWishlistModalProps) {
             onChange={(e) => setDate(e.target.value)}
           />
         </div>
-        {/* Выбор типа события */}
+        {/* Event Type Selection */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700">Event Type</label>
           <select
@@ -179,11 +206,41 @@ function AddWishlistModal({ onClose, onAddWishlist }: AddWishlistModalProps) {
             <option value="newyear">New Year</option>
             <option value="wedding">Wedding</option>
             <option value="graduation">Graduation</option>
+            <option value="custom">Custom</option>
           </select>
         </div>
-        {/* Отображение эмодзи на основе выбранного типа события */}
+        {/* Custom Event Name and Emoji Input */}
+        {eventType === 'custom' && (
+          <>
+            {/* Custom Event Name Input */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">Custom Event Name</label>
+              <input
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                type="text"
+                value={customEventName}
+                onChange={(e) => setCustomEventName(e.target.value)}
+              />
+            </div>
+            {/* Emoji Input */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">Emoji</label>
+              <input
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-3xl"
+                type="text"
+                value={customEventEmoji}
+                onChange={(e) => setCustomEventEmoji(e.target.value)}
+              />
+            </div>
+          </>
+        )}
+        {/* Display Selected Emoji */}
         <div className="mb-4 flex flex-col items-center">
-          <span className="text-6xl">{eventEmojis[eventType] || '🎁'}</span>
+          <span className="text-6xl">
+            {eventType === 'custom'
+              ? customEventEmoji || '🎁'
+              : eventEmojis[eventType] || '🎁'}
+          </span>
         </div>
         <div className="flex justify-end space-x-2">
           <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
