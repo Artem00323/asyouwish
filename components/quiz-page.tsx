@@ -43,6 +43,25 @@ export default function QuizPage() {
         throw new Error('Failed to update user quiz answers');
       }
 
+      // Create birthday wishlist
+      const birthdayWishlistResponse = await fetch('/api/addWishlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: localStorage.getItem('user_id'),
+          name: 'Birthday Wishlist',
+          date: birthDate, // Using the birthday as the event date
+          emoji: '🎂',
+          event_type: 'birthday',
+        }),
+      });
+
+      if (!birthdayWishlistResponse.ok) {
+        throw new Error('Failed to create birthday wishlist');
+      }
+
       // Proceed to wishlist page
       router.push('/wishlist');
     } catch (error) {
