@@ -87,7 +87,7 @@ export default function SignupPageComponent() {
       localStorage.setItem('user_id', user.uid);
 
       // Redirect to wishlist or desired page
-      router.push('/wishlist');
+      router.push('/quiz');
     } catch (err: unknown) {
       if (err instanceof FirebaseError) {
         const friendlyMessage = getFriendlyErrorMessage(err.code);
@@ -131,7 +131,7 @@ export default function SignupPageComponent() {
       localStorage.setItem('user_id', user.uid);
 
       // Redirect to wishlist or desired page
-      router.push('/wishlist');
+      router.push('/quiz');
     } catch (err: unknown) {
       if (err instanceof FirebaseError) {
         const friendlyMessage = getFriendlyErrorMessage(err.code);
