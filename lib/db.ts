@@ -43,6 +43,14 @@ export interface Friendship {
   updated_at?: string;
 }
 
+export interface UserQuizAnswers {
+  id: string;
+  user_id: string;
+  birth_date: string;
+  heard_from: string;
+  created_at?: string;
+}
+
 export const ensureUserInDatabase = async (userData: User) => {
   const { user_id, name, email, password_hash } = userData;
 
