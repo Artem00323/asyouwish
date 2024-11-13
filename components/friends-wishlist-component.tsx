@@ -23,7 +23,6 @@ export function FriendsWishlists() {
   const [pendingRequests, setPendingRequests] = useState<Friend[]>([]);
   const [outgoingRequests, setOutgoingRequests] = useState<Friend[]>([]);
   const [declinedRequests, setDeclinedRequests] = useState<Friend[]>([]);
-  const [friendIdInput, setFriendIdInput] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -60,7 +59,8 @@ export function FriendsWishlists() {
         setPendingRequests(pendingResponse.data.pendingRequests);
         setOutgoingRequests(outgoingAndDeclinedResponse.data.outgoing);
         setDeclinedRequests(outgoingAndDeclinedResponse.data.declined);
-      } catch (_error) {
+      } catch (error) {
+        console.error('Error fetching friends data:', error);
         setError('Unable to fetch friends data');
       }
     };
@@ -182,13 +182,14 @@ export function FriendsWishlists() {
       setSuccessMessage('Friend request canceled');
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (error) {
+      console.error('Error canceling friend request:', error);
       setError('Unable to cancel friend request');
     }
   };
 
   return (
     <div className="container mx-auto p-4">
-      <h2 className="text-3xl font-bold text-primary mb-6">Friends' Wishlists</h2>
+      <h2 className="text-3xl font-bold text-primary mb-6">Friends&apos; Wishlists</h2>
 
       {/* Search and Add Friend Section */}
       <Card className="mb-8 hover:shadow-lg transition-shadow duration-300">
