@@ -9,6 +9,10 @@ const requestSchema = z.object({
   user_id: z.string(),
 });
 
+interface DatabaseError extends Error {
+  code?: string;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
@@ -35,8 +39,8 @@ export async function POST(request: NextRequest) {
         { message: 'Friend request sent' },
         { status: 200 }
       );
-    } catch (dbError: any) {
-      if (dbError.code === '23505') { // Unique constraint violation
+    } catch (dbError: unknown) {
+      if ((dbError as DatabaseError).code === '23505') { // Unique constraint violation
         return NextResponse.json(
           { message: 'Friend request already sent' },
           { status: 409 }
@@ -44,7 +48,8 @@ export async function POST(request: NextRequest) {
       }
       throw dbError;
     }
-  } catch (error) {
+  } catch (error: unknown) {
+    console.error('Error processing friend request:', error);
     return NextResponse.json(
       { message: 'Unable to process request' },
       { status: 500 }

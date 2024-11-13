@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { EventCard } from '@/components/ui/EventCard';
 import { Button } from '@/components/ui/button';
-import { UserPlus, CheckCircle, Users } from 'lucide-react';
+import { CheckCircle, Users } from 'lucide-react';
 import axios from 'axios';
 import { PendingRequestCard } from '@/components/ui/requestCard';
 import { Card, CardContent } from "@/components/ui/card";
@@ -60,7 +60,7 @@ export function FriendsWishlists() {
         setPendingRequests(pendingResponse.data.pendingRequests);
         setOutgoingRequests(outgoingAndDeclinedResponse.data.outgoing);
         setDeclinedRequests(outgoingAndDeclinedResponse.data.declined);
-      } catch (error) {
+      } catch (_error) {
         setError('Unable to fetch friends data');
       }
     };
@@ -97,35 +97,6 @@ export function FriendsWishlists() {
 
     searchUsers();
   }, [debouncedSearchQuery, currentUserId]);
-
-  const handleAddFriend = async () => {
-    setError(null);
-    setSuccessMessage(null);
-    if (!friendIdInput) {
-      setError('Please enter a user ID');
-      return;
-    }
-    if (!currentUserId) {
-      setError('User not authenticated');
-      return;
-    }
-    try {
-      await axios.post('/api/addFriendship', {
-        user_id: currentUserId,
-        friend_id: friendIdInput,
-      });
-      setSuccessMessage('Friend request sent');
-      setFriendIdInput('');
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const errorMessage = error.response?.data?.message || 'An error occurred';
-        setError(errorMessage);
-      } else {
-        console.error('Error adding friend:', error);
-        setError('An error occurred');
-      }
-    }
-  };
 
   const handleRespondToRequest = async (friend_id: string, action: 'accept' | 'reject') => {
     try {

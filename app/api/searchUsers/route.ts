@@ -1,32 +1,35 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
-import { z } from 'zod';
-
-const requestSchema = z.object({
-  searchQuery: z.string(),
-});
 
 export async function POST(request: Request) {
   try {
     const { searchQuery, currentUserId } = await request.json();
     
     if (!searchQuery || !currentUserId) {
-      return new Response(JSON.stringify({ 
+      return NextResponse.json({ 
         message: 'Search query and user ID are required' 
-      }), { status: 400 });
+      }, { status: 400 });
     }
 
     const users = await sql`
       WITH friendship_status AS (
         SELECT 
-          friend_id,
+          CASE
+            WHEN user_id = ${currentUserId} THEN friend_id
+            WHEN friend_id = ${currentUserId} THEN user_id
+          END as friend_id,
           CASE 
             WHEN status = 'accepted' THEN 'friends'
-            WHEN status = 'pending' THEN 'pending'
-            ELSE NULL 
-          END as status
+            WHEN status = 'pending' THEN 
+              CASE 
+                WHEN user_id = ${currentUserId} THEN 'outgoing'
+                WHEN friend_id = ${currentUserId} THEN 'incoming'
+              END
+          END as status,
+          user_id as request_from,
+          friend_id as request_to
         FROM friendships 
-        WHERE user_id = ${currentUserId}
+        WHERE user_id = ${currentUserId} OR friend_id = ${currentUserId}
       )
       SELECT 
         u.user_id,
@@ -38,20 +41,19 @@ export async function POST(request: Request) {
       WHERE 
         custom_lower(u.name) LIKE custom_lower(${`%${searchQuery}%`})
         AND u.user_id != ${currentUserId}
+        AND (
+          fs.status IS NULL 
+          OR (fs.status = 'incoming')
+        )
       ORDER BY 
         CASE WHEN custom_lower(u.name) LIKE custom_lower(${`${searchQuery}%`}) THEN 0 ELSE 1 END,
         u.name
       LIMIT 10;
     `;
 
-    return new Response(JSON.stringify({ users: users.rows }), { 
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return NextResponse.json({ users: users.rows });
   } catch (error) {
-    console.error('Search users error:', error);
-    return new Response(JSON.stringify({ 
-      message: 'An error occurred while searching users' 
-    }), { status: 500 });
+    console.error('Error searching users:', error);
+    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 } 

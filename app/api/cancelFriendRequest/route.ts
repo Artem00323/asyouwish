@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     await deleteFriendship(user_id, friend_id);
     return NextResponse.json({ message: 'Friend request canceled' }, { status: 200 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 } 
