@@ -353,3 +353,12 @@ export const getOutgoingAndDeclinedRequests = async (user_id: string): Promise<{
   };
 };
 
+export const deleteFriendship = async (user_id: string, friend_id: string): Promise<void> => {
+  await sql`
+    DELETE FROM friendships 
+    WHERE user_id = ${user_id} 
+    AND friend_id = ${friend_id} 
+    AND status = 'pending'
+  `;
+};
+

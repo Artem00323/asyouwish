@@ -29,15 +29,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    await addFriendship(user_id, friend_id, 'pending');
-    return NextResponse.json(
-      { message: 'Friend request sent' },
-      { status: 200 }
-    );
+    try {
+      await addFriendship(user_id, friend_id, 'pending');
+      return NextResponse.json(
+        { message: 'Friend request sent' },
+        { status: 200 }
+      );
+    } catch (dbError: any) {
+      if (dbError.code === '23505') { // Unique constraint violation
+        return NextResponse.json(
+          { message: 'Friend request already sent' },
+          { status: 409 }
+        );
+      }
+      throw dbError;
+    }
   } catch (error) {
-    console.error('Error in addFriendship:', error);
     return NextResponse.json(
-      { message: 'Internal Server Error' },
+      { message: 'Unable to process request' },
       { status: 500 }
     );
   }

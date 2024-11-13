@@ -36,8 +36,11 @@ export async function POST(request: Request) {
       FROM users u
       LEFT JOIN friendship_status fs ON u.user_id = fs.friend_id
       WHERE 
-        LOWER(u.name) LIKE ${`%${searchQuery}%`}
+        custom_lower(u.name) LIKE custom_lower(${`%${searchQuery}%`})
         AND u.user_id != ${currentUserId}
+      ORDER BY 
+        CASE WHEN custom_lower(u.name) LIKE custom_lower(${`${searchQuery}%`}) THEN 0 ELSE 1 END,
+        u.name
       LIMIT 10;
     `;
 

@@ -61,7 +61,7 @@ export function FriendsWishlists() {
         setOutgoingRequests(outgoingAndDeclinedResponse.data.outgoing);
         setDeclinedRequests(outgoingAndDeclinedResponse.data.declined);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        setError('Unable to fetch friends data');
       }
     };
     fetchData();
@@ -86,10 +86,8 @@ export function FriendsWishlists() {
         const users = response.data.users;
         setSearchResults(users);
       } catch (error) {
-        console.error('Error searching:', error);
         if (axios.isAxiosError(error)) {
-          const errorMessage = error.response?.data?.message || 'Search is temporarily unavailable';
-          setError(errorMessage);
+          setError(error.response?.data?.message || 'Search is temporarily unavailable');
         }
         setSearchResults([]);
       } finally {
@@ -161,11 +159,18 @@ export function FriendsWishlists() {
         return;
       }
 
-      // Send friend request immediately when user is selected
+      // Send friend request
       await axios.post('/api/addFriendship', {
         user_id: currentUserId,
         friend_id: user.user_id,
       });
+
+      // Add the user to outgoingRequests
+      setOutgoingRequests(prev => [...prev, {
+        user_id: user.user_id,
+        name: user.name,
+        avatar_url: user.avatar_url
+      }]);
 
       // Update UI state
       setSearchQuery('');
@@ -181,9 +186,32 @@ export function FriendsWishlists() {
         const errorMessage = error.response?.data?.message || 'An error occurred';
         setError(errorMessage);
       } else {
-        console.error('Error adding friend:', error);
-        setError('An error occurred');
+        setError('Unable to send friend request');
       }
+    }
+  };
+
+  const handleCancelRequest = async (friend_id: string) => {
+    try {
+      if (!currentUserId) {
+        setError('User not authenticated');
+        return;
+      }
+
+      await axios.post('/api/cancelFriendRequest', {
+        user_id: currentUserId,
+        friend_id,
+      });
+
+      // Update the outgoing requests list
+      setOutgoingRequests((prev) => 
+        prev.filter((req) => req.user_id !== friend_id)
+      );
+
+      setSuccessMessage('Friend request canceled');
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (error) {
+      setError('Unable to cancel friend request');
     }
   };
 
@@ -299,6 +327,14 @@ export function FriendsWishlists() {
                     <p className="font-medium">{request.name}</p>
                     <p className="text-sm text-gray-500">Awaiting response</p>
                   </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                    onClick={() => handleCancelRequest(request.user_id)}
+                  >
+                    Cancel
+                  </Button>
                 </div>
               </Card>
             ))}
