@@ -33,9 +33,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
-          <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 flex flex-col">
-            {children}
-          </div>
+          {children}
         </ThemeProvider>
         <script type="text/javascript">
           {`
