@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -32,10 +32,22 @@ export function AddItemModal({ isOpen, onClose, onAddItem }: AddItemModalProps) 
   const [isParsing, setIsParsing] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [price, setPrice] = useState<string>('');
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string>('');
+
+  useEffect(() => {
+    return () => {
+      // Cleanup URL when component unmounts
+      if (imagePreviewUrl) {
+        URL.revokeObjectURL(imagePreviewUrl);
+      }
+    };
+  }, [imagePreviewUrl]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setManualData((prev) => ({ ...prev, image: e.target.files![0] }));
+      const file = e.target.files[0];
+      setManualData((prev) => ({ ...prev, image: file }));
+      setImagePreviewUrl(URL.createObjectURL(file));
     }
   };
 
@@ -119,7 +131,16 @@ export function AddItemModal({ isOpen, onClose, onAddItem }: AddItemModalProps) 
     const value = e.target.value;
     if (value === '' || /^\d+$/.test(value)) {
       setPrice(value);
+      setManualData(prev => ({
+        ...prev,
+        price: value === '' ? 0 : Number(value)
+      }));
     }
+  };
+
+  const handleRemoveImage = () => {
+    setManualData(prev => ({ ...prev, image: undefined }));
+    setImagePreviewUrl('');
   };
 
   return (
@@ -157,18 +178,40 @@ export function AddItemModal({ isOpen, onClose, onAddItem }: AddItemModalProps) 
                       className="hidden"
                     />
                   </div>
-                  {manualData.image && typeof manualData.image === 'object' && (
+                  {manualData.image && imagePreviewUrl && (
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3 }}
+                      className="relative w-32 h-32"
                     >
+                      <div className="absolute -right-2 -top-2 z-10">
+                        <button
+                          onClick={handleRemoveImage}
+                          className="bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-md transition-colors"
+                        >
+                          <svg 
+                            xmlns="http://www.w3.org/2000/svg" 
+                            width="16" 
+                            height="16" 
+                            viewBox="0 0 24 24" 
+                            fill="none" 
+                            stroke="currentColor" 
+                            strokeWidth="2" 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round"
+                          >
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                          </svg>
+                        </button>
+                      </div>
                       <Image
-                        src={URL.createObjectURL(manualData.image)}
+                        src={imagePreviewUrl}
                         alt={manualData.name}
-                        width={100}
-                        height={100}
-                        className="rounded-md mt-2 object-cover"
+                        width={128}
+                        height={128}
+                        className="rounded-md object-cover w-32 h-32"
                       />
                     </motion.div>
                   )}

@@ -51,6 +51,13 @@ export interface UserQuizAnswers {
   created_at?: string;
 }
 
+export interface Friend {
+  user_id: string;
+  name: string;
+  avatar_url?: string;
+  avatar?: string;
+};
+
 export const ensureUserInDatabase = async (userData: User) => {
   const { user_id, name, email, password_hash } = userData;
 
@@ -142,7 +149,9 @@ export const getItemsByWishlistId = async (wishlist_id: string): Promise<Item[]>
 // Function to get a user by user_id
 export const getUserById = async (user_id: string): Promise<User | null> => {
   const { rows } = await sql<User>`
-    SELECT * FROM users WHERE user_id = ${user_id};
+    SELECT user_id, name, email, avatar_url
+    FROM users
+    WHERE user_id = ${user_id}
   `;
   return rows[0] || null;
 };
@@ -151,28 +160,22 @@ export const getUserById = async (user_id: string): Promise<User | null> => {
 export const addFriendship = async (
   user_id: string,
   friend_id: string,
-  status: string = 'pending'
-): Promise<Friendship> => {
-  // Check if friendship already exists
-  const { rows: existingFriendships } = await sql<Friendship>`
+  status: 'pending' | 'accepted' | 'rejected'
+): Promise<void> => {
+  const existingFriendship = await sql`
     SELECT * FROM friendships
-    WHERE 
-      (user_id = ${user_id} AND friend_id = ${friend_id})
-      OR
-      (user_id = ${friend_id} AND friend_id = ${user_id});
+    WHERE (user_id = ${user_id} AND friend_id = ${friend_id})
+    OR (user_id = ${friend_id} AND friend_id = ${user_id})
   `;
 
-  if (existingFriendships.length > 0) {
+  if (existingFriendship.rows.length > 0) {
     throw new Error('Friendship already exists');
   }
 
-  // Insert new friendship
-  const { rows } = await sql<Friendship>`
+  await sql`
     INSERT INTO friendships (user_id, friend_id, status, created_at, updated_at)
     VALUES (${user_id}, ${friend_id}, ${status}, NOW(), NOW())
-    RETURNING *;
   `;
-  return rows[0];
 };
 
 // Function to get friends for a user
@@ -310,5 +313,52 @@ export const getEventsForUserAndFriends = async (user_id: string, startDate: Dat
     ORDER BY w.date ASC;
   `;
   return rows;
+};
+
+export const searchUsersByName = async (searchQuery: string): Promise<User[]> => {
+  const { rows } = await sql<User>`
+    SELECT user_id, name, email, avatar_url
+    FROM users
+    WHERE 
+      unaccent(LOWER(name)) LIKE unaccent(LOWER(${`%${searchQuery}%`}))
+    LIMIT 5;
+  `;
+  return rows;
+};
+
+export const getOutgoingAndDeclinedRequests = async (user_id: string): Promise<{ outgoing: Friend[]; declined: Friend[] }> => {
+  const { rows } = await sql`
+    SELECT 
+      u.user_id,
+      u.name,
+      u.avatar_url,
+      f.status
+    FROM users u
+    JOIN friendships f ON f.friend_id = u.user_id
+    WHERE f.user_id = ${user_id} 
+    AND f.status IN ('pending', 'rejected');
+  `;
+
+  return {
+    outgoing: rows.filter(row => row.status === 'pending').map(row => ({
+      user_id: row.user_id,
+      name: row.name,
+      avatar_url: row.avatar_url
+    })),
+    declined: rows.filter(row => row.status === 'rejected').map(row => ({
+      user_id: row.user_id,
+      name: row.name,
+      avatar_url: row.avatar_url
+    }))
+  };
+};
+
+export const deleteFriendship = async (user_id: string, friend_id: string): Promise<void> => {
+  await sql`
+    DELETE FROM friendships 
+    WHERE user_id = ${user_id} 
+    AND friend_id = ${friend_id} 
+    AND status = 'pending'
+  `;
 };
 
