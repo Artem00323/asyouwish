@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from '@/components/theme-provider'
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -56,6 +57,7 @@ export default function RootLayout({
             <img src="https://mc.yandex.ru/watch/98829853" style={{ position: 'absolute', left: '-9999px' }} alt="" />
           </div>
         </noscript>
+        <SpeedInsights />
       </body>
     </html>
   );
