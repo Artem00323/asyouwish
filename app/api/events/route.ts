@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getEventsForUserAndFriends } from '@/lib/db';
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
     const { user_id, startDate, endDate } = await request.json();
 

@@ -2,92 +2,128 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Gift, Calendar as CalendarIcon } from 'lucide-react';
-import Link from 'next/link';
-import { Card, CardContent } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
+import { Card } from '@/components/ui/card';
+import { Gift } from 'lucide-react';
+import axios from 'axios';
 import { Event } from '@/components/ui/types';
+import { useRouter } from 'next/navigation';
+import { CalendarIcon, CalendarX } from 'lucide-react';
+
+// interface EventResponse extends Omit<Event, 'date'> {
+//   date: string;
+// }
 
 export function CalendarComponent() {
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [eventsState, setEventsState] = useState<Event[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const firstDayOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
-        const lastDayOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
-
-        const response = await fetch('/api/events', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            user_id: localStorage.getItem('user_id'),
-            startDate: firstDayOfMonth.toISOString(),
-            endDate: lastDayOfMonth.toISOString(),
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch events');
+        const currentUserId = localStorage.getItem('user_id');
+        if (!currentUserId) {
+          setError('User not authenticated');
+          return;
         }
 
-        const data = await response.json();
-        console.log('Fetched events:', data.events);
-        setEventsState(data.events);
+        const date = new Date();
+        const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+        const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+        const response = await axios.post('/api/events', {
+          user_id: currentUserId,
+          startDate: firstDay.toISOString(),
+          endDate: lastDay.toISOString()
+        });
+
+        setEvents(response.data.events);
       } catch (error) {
         console.error('Error fetching events:', error);
+        setError('Unable to load events');
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchEvents();
-  }, [selectedDate]);
+  }, []);
 
-  const getEventsForDate = (date: Date) => {
-    return eventsState.filter((event) => {
-      const eventDate = new Date(event.date);
-      return (
-        eventDate.getDate() === date.getDate() &&
-        eventDate.getMonth() === date.getMonth() &&
-        eventDate.getFullYear() === date.getFullYear()
-      );
-    });
+  const handleEventClick = (event: Event) => {
+    router.push(`/friend-wishlists/${event.friendId}?wishlist=${event.id}`);
   };
 
+  const getEventsForDate = (date: Date) => {
+    return events.filter(event => 
+      new Date(event.date).toDateString() === date.toDateString()
+    );
+  };
+
+  if (loading) {
+    return <div>Loading calendar...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
+  const selectedEvents = getEventsForDate(selectedDate);
+
   return (
-    <>
-      <h2 className="text-3xl font-bold text-primary mb-6">Calendar Events</h2>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Calendar */}
-        <div className="lg:col-span-2">
-          <Calendar events={eventsState} onSelectDate={setSelectedDate} selectedDate={selectedDate} />
-        </div>
-        {/* Events List */}
-        <Card className="p-4 overflow-auto hover:shadow-lg transition-shadow duration-300 bg-card">
-          <h3 className="text-xl font-semibold mb-4">Events on {selectedDate.toDateString()}</h3>
-          {getEventsForDate(selectedDate).length > 0 ? (
-            getEventsForDate(selectedDate).map((event) => (
-              <Link href={`/friend-wishlist/${event.friendId}`} key={event.id}>
-                <CardContent className="mb-4 p-4 bg-secondary rounded-lg cursor-pointer hover:bg-accent transition-colors">
-                  <div className="flex items-center">
-                    {event.type === 'birthday' ? (
-                      <Gift className="mr-2 h-5 w-5 text-blue-600" />
-                    ) : (
-                      <CalendarIcon className="mr-2 h-5 w-5 text-blue-600" />
-                    )}
-                    <span className="font-medium text-foreground">{event.title}</span>
-                    <span className="ml-2 text-sm text-gray-500">({event.friendname})</span>
-                  </div>
-                </CardContent>
-              </Link>
-            ))
-          ) : (
-            <p className="text-muted-foreground">No events on this date.</p>
-          )}
-        </Card>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="md:col-span-2">
+        <Calendar
+          events={events}
+          onSelectDate={setSelectedDate}
+          selectedDate={selectedDate}
+        />
       </div>
-    </>
+      
+      <div className="bg-white rounded-lg border flex flex-col h-full">
+        <h3 className="text-lg font-semibold p-4 border-b flex items-center gap-2">
+          <CalendarIcon className="h-5 w-5 text-primary" />
+          {selectedDate.toLocaleDateString('en-US', { 
+            month: 'long', 
+            day: 'numeric',
+            year: 'numeric'
+          })}
+        </h3>
+        <div className="flex-1 p-4 overflow-auto">
+          <div className="space-y-3">
+            {selectedEvents.length > 0 ? (
+              selectedEvents.map(event => (
+                <Card 
+                  key={event.id} 
+                  className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                  onClick={() => handleEventClick(event)}
+                >
+                  <div className="flex items-center gap-2">
+                    <Gift className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="font-medium">{event.title}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {event.friendname}&apos;s {event.type}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <CalendarX className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground">
+                  No events on this date
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
+
+export const EventCalendar = CalendarComponent;
