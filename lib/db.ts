@@ -1,5 +1,6 @@
 // lib/db.ts
 import { sql } from '@vercel/postgres';
+import { Event } from '@/components/ui/types';
 
 export interface User {
   user_id: string;
@@ -234,9 +235,9 @@ export interface UserProfile {
 
 // Also add this interface if not already defined
 export interface EventType {
-  title: string;
-  date: string;
   type: string;
+  date: Date;
+  title: string;
 }
 
 export const getUserProfile = async (user_id: string): Promise<UserProfile> => {
@@ -301,18 +302,44 @@ export const getUserProfile = async (user_id: string): Promise<UserProfile> => {
   };
 };
 
-export const getEventsForUserAndFriends = async (user_id: string, startDate: Date, endDate: Date): Promise<Event[]> => {
-  const { rows } = await sql<Event>`
-    SELECT w.id, w.name as title, w.date, w.event_type as type, w.user_id as friendId, u.name as friendName
+export const getEventsForUserAndFriends = async (
+  userId: string, 
+  startDate: Date, 
+  endDate: Date
+): Promise<Event[]> => {
+  const { rows } = await sql`
+    SELECT 
+      w.id::text,
+      w.name as title,
+      w.date,
+      w.event_type as type,
+      w.user_id as "friendId",
+      u.name as friendname
     FROM wishlists w
     JOIN users u ON w.user_id = u.user_id
-    LEFT JOIN friendships f ON (f.user_id = ${user_id} AND f.friend_id = w.user_id)
-                            OR (f.friend_id = ${user_id} AND f.user_id = w.user_id)
-    WHERE (f.status = 'accepted' OR w.user_id = ${user_id})
-      AND w.date BETWEEN ${startDate.toISOString()} AND ${endDate.toISOString()}
-    ORDER BY w.date ASC;
+    LEFT JOIN friendships f ON 
+      (f.user_id = ${userId} AND f.friend_id = w.user_id) OR 
+      (f.friend_id = ${userId} AND f.user_id = w.user_id)
+    WHERE (
+      w.user_id = ${userId} OR 
+      (f.status = 'accepted' AND (
+        f.user_id = ${userId} OR 
+        f.friend_id = ${userId}
+      ))
+    )
+    AND w.date >= ${startDate.toISOString()}
+    AND w.date <= ${endDate.toISOString()}
+    ORDER BY w.date ASC
   `;
-  return rows;
+
+  return rows.map(row => ({
+    id: row.id,
+    title: row.title,
+    date: new Date(row.date).toISOString(),
+    type: row.type,
+    friendId: row.friendId,
+    friendname: row.friendname
+  }));
 };
 
 export const searchUsersByName = async (searchQuery: string): Promise<User[]> => {
@@ -360,5 +387,40 @@ export const deleteFriendship = async (user_id: string, friend_id: string): Prom
     AND friend_id = ${friend_id} 
     AND status = 'pending'
   `;
+};
+
+export const getFriendWishlists = async (friend_id: string): Promise<Wishlist[]> => {
+  const { rows: wishlists } = await sql<Wishlist>`
+    SELECT w.*, u.name as friend_name
+    FROM wishlists w
+    JOIN users u ON w.user_id = u.user_id
+    WHERE w.user_id = ${friend_id}
+    ORDER BY w.date ASC;
+  `;
+
+  // Get items for each wishlist
+  const wishlistsWithItems = await Promise.all(
+    wishlists.map(async (wishlist) => {
+      const items = await getItemsForWishlist(wishlist.id);
+      return { ...wishlist, items };
+    })
+  );
+
+  return wishlistsWithItems;
+};
+
+export const getFriendWishlistItems = async (wishlist_id: string, user_id: string): Promise<Item[]> => {
+  const { rows } = await sql<Item>`
+    SELECT i.*, w.user_id as owner_id
+    FROM items i
+    JOIN wishlists w ON i.wishlist_id = w.id
+    JOIN friendships f ON 
+      (f.user_id = ${user_id} AND f.friend_id = w.user_id)
+      OR (f.friend_id = ${user_id} AND f.user_id = w.user_id)
+    WHERE w.id = ${wishlist_id}
+    AND f.status = 'accepted'
+    ORDER BY i.created_at DESC;
+  `;
+  return rows;
 };
 

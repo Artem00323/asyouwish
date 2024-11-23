@@ -240,9 +240,9 @@ export function YourWishlistComponent({
   const [wishlistLink, setWishlistLink] = useState('');
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setWishlistLink(`${window.location.origin}/wishlist/${wishlistId}`);
-    }
+    // Generate the correct shared wishlist URL
+    const baseUrl = window.location.origin;
+    setWishlistLink(`${baseUrl}/shared-wishlist/${wishlistId}`);
   }, [wishlistId]);
 
   const toggleShowMore = () => {
