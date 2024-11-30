@@ -275,7 +275,15 @@ export function YourWishlistComponent({
               <PlusCircle className="mr-2 h-4 w-4" /> Add
             </Button>
             <Button
-              onClick={handleShareWishlist}
+              onClick={() => {
+                // Track the share wishlist goal
+                // @ts-ignore
+                window.ym && window.ym(98829853, 'reachGoal', 'Share wishlist', {
+                  wishlist_id: wishlistId,
+                  wishlist_name: wishlistName
+                });
+                handleShareWishlist();
+              }}
               variant="outline"
               size="sm"
               className="w-24 text-primary"

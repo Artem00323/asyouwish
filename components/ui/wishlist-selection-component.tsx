@@ -9,6 +9,13 @@ import { Modal } from '@/components/ui/modal';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/components/backend/firebase';
 
+// Add this type declaration at the top of the file
+declare global {
+  interface Window {
+    ym?: (counterId: number, type: string, goal: string, params?: object) => void;
+  }
+}
+
 // Define the Wishlist type with date required
 type Wishlist = {
   id: string;
@@ -60,6 +67,12 @@ export function WishlistSelectionComponent({
           onAddWishlist={(newWishlist) => {
             // Update the wishlists state with the new wishlist
             setWishlists([...wishlists, newWishlist]);
+            // Track the goal in Yandex Metrika with additional parameters
+            window.ym && window.ym(98829853, 'reachGoal', 'Add wishlist', {
+              wishlist_name: newWishlist.name,
+              wishlist_type: newWishlist.eventType
+            });
+            return true;
           }}
         />
       )}
