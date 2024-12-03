@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { RussianRuble } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { Slider } from '@/components/ui/slider';
 
 interface ContributeModalProps {
   isOpen: boolean;
@@ -23,10 +24,20 @@ export function ContributeModal({
   contributed,
   onContribute,
 }: ContributeModalProps) {
-  const [amount, setAmount] = useState('');
+  const [amount, setAmount] = useState('0');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const remaining = itemPrice - contributed;
+
+  const itemPriceNum = Number(itemPrice) || 0;
+  const contributedNum = Number(contributed) || 0;
+  const amountNum = Number(Number(amount).toFixed(2)) || 0;
+  
+  const remaining = Number((itemPriceNum - contributedNum).toFixed(2));
+  const currentProgress = (contributedNum / itemPriceNum) * 100;
+
+  const handleSliderChange = (value: number[]) => {
+    setAmount(value[0].toString());
+  };
 
   const handleSubmit = async () => {
     const contributionAmount = parseFloat(amount);
@@ -44,8 +55,7 @@ export function ContributeModal({
     try {
       await onContribute(contributionAmount, message);
       onClose();
-    } catch (error) {
-      console.error('Error contributing:', error);
+    } catch {
       alert('Failed to process contribution');
     } finally {
       setIsSubmitting(false);
@@ -54,31 +64,40 @@ export function ContributeModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="w-[calc(100%-2rem)] mx-auto sm:w-full max-w-lg rounded-lg">
         <DialogHeader>
           <DialogTitle>Contribute to {itemName}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 p-4">
           <div>
-            <Progress value={(contributed / itemPrice) * 100} className="mb-2" />
+            <Progress value={currentProgress} className="mb-2" />
             <p className="text-sm text-muted-foreground">
-              {contributed}₽ raised of {itemPrice}₽
+              {contributedNum.toFixed(2)}₽ raised of {itemPriceNum.toFixed(2)}₽
             </p>
             <p className="text-sm text-muted-foreground">
-              Remaining: {remaining}₽
+              Remaining: {Math.max(0, remaining).toFixed(2)}₽
             </p>
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium">Amount (₽)</label>
-            <div className="relative">
-              <RussianRuble className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="pl-10"
-                placeholder="Enter amount"
+            <div className="space-y-4">
+              <Slider
+                value={[amountNum]}
+                onValueChange={handleSliderChange}
+                max={remaining}
+                step={1}
+                className="mb-2"
               />
+              <div className="relative">
+                <RussianRuble className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  type="number"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="pl-10"
+                  placeholder="Enter amount"
+                />
+              </div>
             </div>
           </div>
           <div className="space-y-2">

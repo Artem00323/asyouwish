@@ -39,8 +39,22 @@ export async function POST(request: Request) {
     const wishlistsWithItems = await Promise.all(
       wishlists.map(async (wishlist) => {
         const { rows: items } = await sql<Item>`
-          SELECT * FROM items 
-          WHERE wishlist_id = ${wishlist.id}
+          SELECT i.*, 
+            (
+              SELECT json_agg(json_build_object(
+                'user_id', u.user_id,
+                'name', u.name,
+                'email', u.email,
+                'avatar_url', u.avatar_url,
+                'amount', c.amount,
+                'message', c.message
+              ))
+              FROM contributions c
+              JOIN users u ON c.sender_id = u.user_id
+              WHERE c.item_id = i.id
+            ) as contributors
+          FROM items i
+          WHERE i.wishlist_id = ${wishlist.id}
         `;
         return { ...wishlist, items };
       })

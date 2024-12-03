@@ -32,8 +32,6 @@ interface WishlistItem {
   price: number;
   contributed: number;
   description: string;
-  created_at?: string;
-  updated_at?: string;
   contributors?: Contributor[];
 }
 
@@ -132,26 +130,48 @@ export function FriendWishlistView({ friendId }: { friendId: string }) {
           item_id: selectedItem.id,
           sender_id: user.uid,
           receiver_id: friendId,
-          amount,
+          amount: Number(amount.toFixed(2)),
           message,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to process contribution');
+        throw new Error();
       }
 
-      // Update the item's contributed amount locally
-      const updatedItems = selectedWishlist?.items.map(item =>
+      const contributorsResponse = await fetch('/api/getContributors', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ item_id: selectedItem.id }),
+      });
+
+      const { contributors } = await contributorsResponse.json();
+
+      const updatedItems = selectedWishlist.items.map(item =>
         item.id === selectedItem.id
-          ? { ...item, contributed: item.contributed + amount }
+          ? {
+              ...item,
+              contributed: Number(item.contributed || 0) + Number(amount),
+              contributors: contributors.map((c: { 
+                sender_id: string;
+                sender_name: string;
+                sender_avatar: string;
+                amount: number;
+                messages: string;
+              }) => ({
+                user_id: c.sender_id,
+                name: c.sender_name,
+                avatar_url: c.sender_avatar,
+                amount: Number(c.amount),
+                message: c.messages
+              }))
+            }
           : item
-      ) ?? [];
+      );
 
       setSelectedWishlist(prev => prev ? { ...prev, items: updatedItems } : null);
       setIsContributeModalOpen(false);
-    } catch (error) {
-      console.error('Error contributing:', error);
+    } catch {
       alert('Failed to process contribution');
     }
   };
@@ -167,29 +187,34 @@ export function FriendWishlistView({ friendId }: { friendId: string }) {
     contributors: Contributor[];
     itemName: string;
   }) => {
+    const sortedContributors = [...contributors].sort((a, b) => b.amount - a.amount);
+
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent>
+        <DialogContent className="w-[calc(100%-2rem)] mx-auto sm:w-full max-w-lg rounded-lg">
           <DialogHeader>
             <DialogTitle>Contributors for {itemName}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            {contributors.map((contributor) => (
-              <div key={contributor.user_id} className="flex items-center space-x-4">
-                <Avatar>
-                  <AvatarImage src={contributor.avatar_url || '/avatars/default.png'} />
-                  <AvatarFallback>{contributor.name[0]}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <p className="font-medium">{contributor.name}</p>
-                  <p className="text-sm text-muted-foreground">{contributor.email}</p>
-                  {contributor.message && (
-                    <p className="text-sm text-muted-foreground mt-1">"{contributor.message}"</p>
-                  )}
+          <div className="max-h-[60vh] overflow-y-auto pr-2">
+            <div className="space-y-4">
+              {sortedContributors.map((contributor) => (
+                <div key={contributor.user_id} className="flex items-center space-x-4">
+                  <Avatar>
+                    <AvatarImage src={contributor.avatar_url || '/avatars/default.png'} />
+                    <AvatarFallback>{contributor.name[0]}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <p className="font-medium">{contributor.name}</p>
+                    {contributor.message && (
+                      <p className="text-sm text-muted-foreground mt-1 italic">
+                        "{contributor.message}"
+                      </p>
+                    )}
+                  </div>
+                  <p className="font-medium whitespace-nowrap">{contributor.amount.toFixed(2)}₽</p>
                 </div>
-                <p className="font-medium">{contributor.amount}₽</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -249,61 +274,34 @@ export function FriendWishlistView({ friendId }: { friendId: string }) {
                 <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
                   {item.description}
                 </p>
-                <div className="flex items-center justify-between mb-2">
-                  {item.contributors && item.contributors.length > 0 && (
-                    <div className="flex -space-x-2 overflow-hidden">
-                      {item.contributors.slice(0, 3).map((contributor) => (
-                        <Avatar
-                          key={contributor.user_id}
-                          className="w-6 h-6 border-2 border-background"
-                        >
-                          <AvatarImage src={contributor.avatar_url || '/avatars/default.png'} />
-                          <AvatarFallback>{contributor.name[0]}</AvatarFallback>
-                        </Avatar>
-                      ))}
-                      {item.contributors.length > 3 && (
-                        <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-xs font-medium border-2 border-background">
-                          +{item.contributors.length - 3}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  <span className="text-sm text-muted-foreground">
-                    {item.contributed}₽ raised
-                  </span>
-                </div>
                 <Progress 
                   value={(item.contributed / item.price) * 100}
                   className="mb-2"
                 />
                 <div className="flex justify-between items-center">
                   <Button
+                    variant="ghost"
                     size="sm"
+                    className="p-0 hover:bg-transparent flex items-center"
                     onClick={() => {
-                      setSelectedItem(item);
-                      setIsContributeModalOpen(true);
-                    }}
-                    disabled={item.contributed >= item.price}
-                  >
-                    Contribute
-                  </Button>
-                  {item.contributors && item.contributors.length > 0 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="p-0 hover:bg-transparent"
-                      onClick={() => {
+                      if (item.contributors?.length) {
                         setSelectedItemContributors({
                           itemName: item.name,
                           contributors: item.contributors
                         });
                         setShowContributors(true);
-                      }}
-                    >
-                      <div className="flex -space-x-2 overflow-hidden">
-                        {item.contributors.slice(0, 3).map((contributor) => (
+                      }
+                    }}
+                    disabled={!item.contributors?.length}
+                  >
+                    <span className="text-sm text-muted-foreground mr-2">
+                      {item.contributed}₽ raised
+                    </span>
+                    {item.contributors && item.contributors.length > 0 && (
+                      <div className="flex -space-x-2">
+                        {item.contributors.slice(0, 3).map((contributor, index) => (
                           <Avatar
-                            key={contributor.user_id}
+                            key={`${contributor.user_id}-${index}`}
                             className="w-6 h-6 border-2 border-background"
                           >
                             <AvatarImage src={contributor.avatar_url || '/avatars/default.png'} />
@@ -316,8 +314,18 @@ export function FriendWishlistView({ friendId }: { friendId: string }) {
                           </div>
                         )}
                       </div>
-                    </Button>
-                  )}
+                    )}
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setSelectedItem(item);
+                      setIsContributeModalOpen(true);
+                    }}
+                    disabled={Number(item.contributed) >= Number(item.price)}
+                  >
+                    {Number(item.contributed) >= Number(item.price) ? 'Fully Funded' : 'Contribute'}
+                  </Button>
                 </div>
               </CardContent>
             </Card>
