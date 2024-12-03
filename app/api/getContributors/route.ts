@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     `;
 
     return NextResponse.json({ contributors: rows });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { message: 'Failed to fetch contributors' },
       { status: 500 }

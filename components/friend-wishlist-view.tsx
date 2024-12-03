@@ -207,7 +207,7 @@ export function FriendWishlistView({ friendId }: { friendId: string }) {
                     <p className="font-medium">{contributor.name}</p>
                     {contributor.message && (
                       <p className="text-sm text-muted-foreground mt-1 italic">
-                        "{contributor.message}"
+                        &ldquo;{contributor.message}&rdquo;
                       </p>
                     )}
                   </div>

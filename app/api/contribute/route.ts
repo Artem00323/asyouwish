@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { sql } from '@vercel/postgres';
-import { auth } from '@/components/backend/firebase';
 
 const contributionSchema = z.object({
   item_id: z.number(),
