@@ -9,6 +9,9 @@ import axios from 'axios';
 import Image from 'next/image';
 import { Progress } from "@/components/ui/progress";
 import { useRouter, useSearchParams } from 'next/navigation';
+import { ContributeModal } from '@/components/contribute-modal';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '@/components/backend/firebase';
 
 interface WishlistItem {
   id: number;
@@ -36,7 +39,7 @@ interface Wishlist {
 
 export function FriendWishlistView({ friendId }: { friendId: string }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams() ?? new URLSearchParams();
   const fromCalendar = searchParams.get('from') === 'calendar';
   const wishlistId = searchParams.get('wishlist');
   const [wishlists, setWishlists] = useState<Wishlist[]>([]);
@@ -44,6 +47,9 @@ export function FriendWishlistView({ friendId }: { friendId: string }) {
   const [friendName, setFriendName] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [user] = useAuthState(auth);
+  const [selectedItem, setSelectedItem] = useState<WishlistItem | null>(null);
+  const [isContributeModalOpen, setIsContributeModalOpen] = useState(false);
 
   useEffect(() => {
     if (wishlistId && wishlists.length > 0) {
@@ -92,6 +98,44 @@ export function FriendWishlistView({ friendId }: { friendId: string }) {
       router.push('/wishlist?tab=calendar-events');
     } else {
       router.push('/wishlist?tab=friends-wishlists');
+    }
+  };
+
+  const handleContribute = async (amount: number, message: string) => {
+    if (!user || !selectedItem || !selectedWishlist) return;
+
+    try {
+      const response = await fetch('/api/contribute', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+        body: JSON.stringify({
+          item_id: selectedItem.id,
+          sender_id: user.uid,
+          receiver_id: friendId,
+          amount,
+          message,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to process contribution');
+      }
+
+      // Update the item's contributed amount locally
+      const updatedItems = selectedWishlist?.items.map(item =>
+        item.id === selectedItem.id
+          ? { ...item, contributed: item.contributed + amount }
+          : item
+      ) ?? [];
+
+      setSelectedWishlist(prev => prev ? { ...prev, items: updatedItems } : null);
+      setIsContributeModalOpen(false);
+    } catch (error) {
+      console.error('Error contributing:', error);
+      alert('Failed to process contribution');
     }
   };
 
@@ -152,14 +196,39 @@ export function FriendWishlistView({ friendId }: { friendId: string }) {
                   value={(item.contributed / item.price) * 100}
                   className="mb-2"
                 />
-                <div className="flex justify-between items-center text-sm text-muted-foreground">
-                  <span>{item.contributed}₽ raised</span>
-                  <span>{((item.contributed / item.price) * 100).toFixed(0)}%</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">
+                    {item.contributed}₽ raised
+                  </span>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setSelectedItem(item);
+                      setIsContributeModalOpen(true);
+                    }}
+                    disabled={item.contributed >= item.price}
+                  >
+                    Contribute
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
+
+        {selectedItem && (
+          <ContributeModal
+            isOpen={isContributeModalOpen}
+            onClose={() => {
+              setIsContributeModalOpen(false);
+              setSelectedItem(null);
+            }}
+            itemName={selectedItem.name}
+            itemPrice={selectedItem.price}
+            contributed={selectedItem.contributed}
+            onContribute={handleContribute}
+          />
+        )}
       </div>
     );
   }
