@@ -157,7 +157,7 @@ export function SharedWishlistView({ wishlistId }: SharedWishlistViewProps) {
   }
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 force-light">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           {user && (
