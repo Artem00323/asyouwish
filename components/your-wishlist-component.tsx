@@ -276,12 +276,12 @@ export function YourWishlistComponent({
             </Button>
             <Button
               onClick={() => {
-                // Track the share wishlist goal
-                // @ts-ignore
-                window.ym && window.ym(98829853, 'reachGoal', 'Share wishlist', {
-                  wishlist_id: wishlistId,
-                  wishlist_name: wishlistName
-                });
+                if (window.ym) {
+                  window.ym(98829853, 'reachGoal', 'Share wishlist', {
+                    wishlist_id: wishlistId,
+                    wishlist_name: wishlistName
+                  });
+                }
                 handleShareWishlist();
               }}
               variant="outline"
