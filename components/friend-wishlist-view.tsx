@@ -12,6 +12,17 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { ContributeModal } from '@/components/contribute-modal';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/components/backend/firebase';
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
+interface Contributor {
+  user_id: string;
+  name: string;
+  email: string;
+  avatar_url?: string;
+  amount: number;
+  message?: string;
+}
 
 interface WishlistItem {
   id: number;
@@ -23,6 +34,7 @@ interface WishlistItem {
   description: string;
   created_at?: string;
   updated_at?: string;
+  contributors?: Contributor[];
 }
 
 interface Wishlist {
@@ -50,6 +62,11 @@ export function FriendWishlistView({ friendId }: { friendId: string }) {
   const [user] = useAuthState(auth);
   const [selectedItem, setSelectedItem] = useState<WishlistItem | null>(null);
   const [isContributeModalOpen, setIsContributeModalOpen] = useState(false);
+  const [showContributors, setShowContributors] = useState(false);
+  const [selectedItemContributors, setSelectedItemContributors] = useState<{
+    itemName: string;
+    contributors: Contributor[];
+  } | null>(null);
 
   useEffect(() => {
     if (wishlistId && wishlists.length > 0) {
@@ -139,6 +156,46 @@ export function FriendWishlistView({ friendId }: { friendId: string }) {
     }
   };
 
+  const ContributorsDialog = ({
+    isOpen,
+    onClose,
+    contributors,
+    itemName,
+  }: {
+    isOpen: boolean;
+    onClose: () => void;
+    contributors: Contributor[];
+    itemName: string;
+  }) => {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Contributors for {itemName}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {contributors.map((contributor) => (
+              <div key={contributor.user_id} className="flex items-center space-x-4">
+                <Avatar>
+                  <AvatarImage src={contributor.avatar_url || '/avatars/default.png'} />
+                  <AvatarFallback>{contributor.name[0]}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <p className="font-medium">{contributor.name}</p>
+                  <p className="text-sm text-muted-foreground">{contributor.email}</p>
+                  {contributor.message && (
+                    <p className="text-sm text-muted-foreground mt-1">"{contributor.message}"</p>
+                  )}
+                </div>
+                <p className="font-medium">{contributor.amount}₽</p>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  };
+
   if (loading) {
     return <div className="flex justify-center items-center min-h-[200px]">Loading...</div>;
   }
@@ -192,14 +249,34 @@ export function FriendWishlistView({ friendId }: { friendId: string }) {
                 <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
                   {item.description}
                 </p>
+                <div className="flex items-center justify-between mb-2">
+                  {item.contributors && item.contributors.length > 0 && (
+                    <div className="flex -space-x-2 overflow-hidden">
+                      {item.contributors.slice(0, 3).map((contributor) => (
+                        <Avatar
+                          key={contributor.user_id}
+                          className="w-6 h-6 border-2 border-background"
+                        >
+                          <AvatarImage src={contributor.avatar_url || '/avatars/default.png'} />
+                          <AvatarFallback>{contributor.name[0]}</AvatarFallback>
+                        </Avatar>
+                      ))}
+                      {item.contributors.length > 3 && (
+                        <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-xs font-medium border-2 border-background">
+                          +{item.contributors.length - 3}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <span className="text-sm text-muted-foreground">
+                    {item.contributed}₽ raised
+                  </span>
+                </div>
                 <Progress 
                   value={(item.contributed / item.price) * 100}
                   className="mb-2"
                 />
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">
-                    {item.contributed}₽ raised
-                  </span>
                   <Button
                     size="sm"
                     onClick={() => {
@@ -210,6 +287,37 @@ export function FriendWishlistView({ friendId }: { friendId: string }) {
                   >
                     Contribute
                   </Button>
+                  {item.contributors && item.contributors.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="p-0 hover:bg-transparent"
+                      onClick={() => {
+                        setSelectedItemContributors({
+                          itemName: item.name,
+                          contributors: item.contributors
+                        });
+                        setShowContributors(true);
+                      }}
+                    >
+                      <div className="flex -space-x-2 overflow-hidden">
+                        {item.contributors.slice(0, 3).map((contributor) => (
+                          <Avatar
+                            key={contributor.user_id}
+                            className="w-6 h-6 border-2 border-background"
+                          >
+                            <AvatarImage src={contributor.avatar_url || '/avatars/default.png'} />
+                            <AvatarFallback>{contributor.name[0]}</AvatarFallback>
+                          </Avatar>
+                        ))}
+                        {item.contributors.length > 3 && (
+                          <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-xs font-medium border-2 border-background">
+                            +{item.contributors.length - 3}
+                          </div>
+                        )}
+                      </div>
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -227,6 +335,15 @@ export function FriendWishlistView({ friendId }: { friendId: string }) {
             itemPrice={selectedItem.price}
             contributed={selectedItem.contributed}
             onContribute={handleContribute}
+          />
+        )}
+
+        {selectedItemContributors && (
+          <ContributorsDialog
+            isOpen={showContributors}
+            onClose={() => setShowContributors(false)}
+            contributors={selectedItemContributors.contributors}
+            itemName={selectedItemContributors.itemName}
           />
         )}
       </div>
