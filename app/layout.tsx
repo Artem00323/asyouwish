@@ -3,7 +3,6 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from '@/components/theme-provider'
 import { SpeedInsights } from "@vercel/speed-insights/next"
-import Image from 'next/image';
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -55,13 +54,6 @@ export default function RootLayout({
         </script>
         <noscript>
           <div>
-            <Image 
-              src="/your-image-path.jpg"
-              alt="Your alt text"
-              width={500}
-              height={300}
-              priority
-            />
           </div>
         </noscript>
         <SpeedInsights />
