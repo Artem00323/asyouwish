@@ -54,6 +54,7 @@ export default function RootLayout({
         </script>
         <noscript>
           <div>
+            <img src="https://mc.yandex.ru/watch/98829853" style={{ position: 'absolute', left: '-9999px' }} alt="" />
           </div>
         </noscript>
         <SpeedInsights />
