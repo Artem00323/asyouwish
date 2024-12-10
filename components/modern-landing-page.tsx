@@ -5,21 +5,37 @@ import { Card, CardContent } from "@/components/ui/card"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { Gift, Calendar, Share2 } from 'lucide-react'
+import Image from 'next/image'
 
 export function ModernLandingPageComponent() {
+
+  // const handlePrivacyPolicy = () => {
+  //   window.open('/privacy/personal_data_policy_AsYouWish.pdf', '_blank');
+  // };
+
+  // const handleTermsOfService = () => {
+  //   window.open('/terms/user_agreement_AsYouWish.pdf', '_blank');
+  // };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 dark:from-indigo-100 dark:via-purple-100 dark:to-pink-100 flex flex-col">
       <header className="container mx-auto px-2 sm:px-4 py-3 sm:py-6 flex justify-between items-center bg-white/50 dark:bg-white/50 backdrop-blur-sm rounded-lg shadow-sm mb-4 sm:mb-8">
         <div className="flex items-center space-x-2 sm:space-x-8">
-          <motion.h1 
+          <motion.div 
             initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={{ opacity: 1, y: -5 }}
             transition={{ duration: 0.5 }}
-            className="text-lg sm:text-xl md:text-4xl font-bold text-indigo-800 dark:text-indigo-800"
+            className="h-12 sm:h-16 md:h-20"
           >
-            AsYouWish
-          </motion.h1>
+            <Image
+              src="/images/asyouwish_logo_newyear.svg"
+              alt="AsYouWish Logo"
+              width={180}
+              height={60}
+              className="h-full w-auto object-contain"
+              priority
+            />
+          </motion.div>
         </div>
         <nav className="flex items-center space-x-2 sm:space-x-4">
           <Button 
@@ -270,8 +286,22 @@ export function ModernLandingPageComponent() {
         <div className="container mx-auto px-4 text-center">
           <p className="mb-4">&copy; 2024 AsYouWish. All rights reserved.</p>
           <div className="flex justify-center space-x-4">
-            <Link href="/privacy" className="hover:underline">Privacy Policy</Link>
-            <Link href="/terms" className="hover:underline">Terms of Service</Link>
+            <a 
+              href="../app/privacy/personal_data_policy_AsYouWish.pdf" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="hover:underline"
+            >
+              Privacy Policy
+            </a>
+            <a 
+              href="../app/privacy/user_agreement_AsYouWish.pdf" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="hover:underline"
+            >
+              Terms of Service
+            </a>
             <Link href="/contact" className="hover:underline">Contact Us</Link>
           </div>
         </div>
