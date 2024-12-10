@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Gift, Users, Calendar as CalendarIcon, User } from 'lucide-react';
+import Image from 'next/image';
 
 type Tab = 'your-wishlist' | 'friends-wishlists' | 'calendar-events' | 'profile';
 
@@ -14,7 +15,16 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
   return (
     <div className="w-64 bg-card h-full shadow-lg">
       <div className="p-4">
-        <h1 className="text-2xl font-bold text-primary mb-4">AsYouWish</h1>
+        <div className="flex justify-center h-10 sm:h-12 mb-4">
+          <Image
+            src="/images/asyouwish_logo_newyear.svg"
+            alt="AsYouWish Logo"
+            width={160}
+            height={50}
+            className="h-full w-auto object-contain"
+            priority
+          />
+        </div>
         <nav>
           {[
             { tab: 'your-wishlist', icon: Gift, label: 'Your Wishlists' },

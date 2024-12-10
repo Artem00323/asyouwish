@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { writeFile } from 'fs/promises';
 import path from 'path';
+// import Image from 'next/image'
 
 export async function POST(request: Request) {
   const formData = await request.formData();
