@@ -26,10 +26,13 @@ import { FirebaseError } from 'firebase/app';
 
 export default function SignupPageComponent() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState(''); // Even though we don't store it
+  const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isAgreedPrivacy, setIsAgreedPrivacy] = useState(false);
+  const [isAgreedTerms, setIsAgreedTerms] = useState(false);
+  // const [isAgreedGoogle, setIsAgreedGoogle] = useState(false);
   const router = useRouter();
 
   // Function to ensure user exists in the database
@@ -61,7 +64,7 @@ export default function SignupPageComponent() {
   // Handle Email/Password Signup
   const handleSignup = async (e: FormEvent) => {
     e.preventDefault();
-    if (isLoading) return;
+    if (isLoading || !isAgreedPrivacy || !isAgreedTerms) return; // Prevent signup if not agreed
     setIsLoading(true);
     setError('');
 
@@ -106,6 +109,13 @@ export default function SignupPageComponent() {
   // Handle Google Signup
   const handleGoogleSignup = async () => {
     if (isLoading) return;
+
+    // Check if the user has agreed to the rules
+    if (!isAgreedPrivacy || !isAgreedTerms) {
+      alert("You must agree to the Privacy Policy and Terms of Service to continue.");
+      return; // Prevent signup if not agreed
+    }
+
     setIsLoading(true);
     setError('');
 
@@ -217,7 +227,31 @@ export default function SignupPageComponent() {
                 disabled={isLoading}
               />
             </div>
-            <Button className="w-full" type="submit" disabled={isLoading}>
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="privacy-agreement"
+                checked={isAgreedPrivacy}
+                onChange={() => setIsAgreedPrivacy(!isAgreedPrivacy)}
+                required
+              />
+              <Label htmlFor="privacy-agreement" className="ml-2">
+                I agree to the <Link href="https://docs.google.com/document/d/11K7ZNydJ2_5gok4pz-6VK7OFUVFfiTgmqbtenF_I4sQ/edit" className="text-blue-500 hover:underline">Privacy Policy</Link>
+              </Label>
+            </div>
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="terms-agreement"
+                checked={isAgreedTerms}
+                onChange={() => setIsAgreedTerms(!isAgreedTerms)}
+                required
+              />
+              <Label htmlFor="terms-agreement" className="ml-2">
+                I agree to the <Link href="https://docs.google.com/document/d/1rzFN1zaZGKMBXdhrR2YQHsEYMXW2SYtVeJJ49LCg6h8/edit" className="text-blue-500 hover:underline">Terms of Service</Link>
+              </Label>
+            </div>
+            <Button className="w-full" type="submit" disabled={isLoading || !isAgreedPrivacy || !isAgreedTerms}>
               {isLoading ? "Creating Account..." : "Create Account"}
             </Button>
             <div className="relative">

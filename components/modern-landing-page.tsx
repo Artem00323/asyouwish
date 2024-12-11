@@ -287,7 +287,7 @@ export function ModernLandingPageComponent() {
           <p className="mb-4">&copy; 2024 AsYouWish. All rights reserved.</p>
           <div className="flex justify-center space-x-4">
             <a 
-              href="../app/privacy/personal_data_policy_AsYouWish.pdf" 
+              href="https://docs.google.com/document/d/11K7ZNydJ2_5gok4pz-6VK7OFUVFfiTgmqbtenF_I4sQ/edit" 
               target="_blank" 
               rel="noopener noreferrer" 
               className="hover:underline"
@@ -295,7 +295,7 @@ export function ModernLandingPageComponent() {
               Privacy Policy
             </a>
             <a 
-              href="../app/privacy/user_agreement_AsYouWish.pdf" 
+              href="https://docs.google.com/document/d/1rzFN1zaZGKMBXdhrR2YQHsEYMXW2SYtVeJJ49LCg6h8/edit" 
               target="_blank" 
               rel="noopener noreferrer" 
               className="hover:underline"
