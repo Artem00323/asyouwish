@@ -1,21 +1,24 @@
 'use client'
 
+import { useState } from 'react';
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { Gift, Calendar, Share2 } from 'lucide-react'
 import Image from 'next/image'
+import ModalContact from './ModalContact';
 
 export function ModernLandingPageComponent() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // const handlePrivacyPolicy = () => {
-  //   window.open('/privacy/personal_data_policy_AsYouWish.pdf', '_blank');
-  // };
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
 
-  // const handleTermsOfService = () => {
-  //   window.open('/terms/user_agreement_AsYouWish.pdf', '_blank');
-  // };
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 dark:from-indigo-100 dark:via-purple-100 dark:to-pink-100 flex flex-col">
@@ -302,10 +305,11 @@ export function ModernLandingPageComponent() {
             >
               Terms of Service
             </a>
-            <Link href="/contact" className="hover:underline">Contact Us</Link>
+            <Link href="#" onClick={handleOpenModal} className="hover:underline cursor-pointer">Contact Us</Link>
           </div>
         </div>
       </footer>
+      <ModalContact isOpen={isModalOpen} onClose={handleCloseModal} />
     </div>
   )
 }
